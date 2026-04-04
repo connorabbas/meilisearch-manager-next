@@ -6,7 +6,7 @@ import type { Index } from 'meilisearch'
 
 definePageMeta({
     layout: 'app',
-    title: 'Index - Edit',
+    title: 'Edit Index',
 })
 
 const route = useRoute()

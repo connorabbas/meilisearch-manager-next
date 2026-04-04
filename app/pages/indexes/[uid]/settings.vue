@@ -5,7 +5,7 @@ import { Mode } from 'vanilla-jsoneditor'
 
 definePageMeta({
     layout: 'app',
-    title: 'Index - Settings',
+    title: 'Index Settings',
 })
 
 const route = useRoute()

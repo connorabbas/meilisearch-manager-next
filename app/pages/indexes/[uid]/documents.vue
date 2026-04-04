@@ -22,7 +22,7 @@ definePageMeta({
 
 const route = useRoute()
 const indexUid = computed(() => String(route.params.uid ?? ''))
-const { currentIndex } = useIndexes()
+const { currentIndex, fetchIndex } = useIndexes()
 const { isSendingTask, confirmDeleteDocument } = useDocuments()
 const { indexStats, fetchIndexStats } = useStats()
 const {
@@ -48,6 +48,7 @@ const primaryKey = computed(() => currentIndex.value?.primaryKey)
 
 async function fetchData() {
     await Promise.all([
+        fetchIndex(indexUid.value),
         searchPaginated(indexUid.value, true),
         fetchIndexStats(indexUid.value),
     ])

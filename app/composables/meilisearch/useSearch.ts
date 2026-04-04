@@ -1,5 +1,4 @@
-import { computed, ref, watch } from 'vue'
-import { Filter, RecordAny, type SearchParams, type SearchResponse } from 'meilisearch'
+import type { Filter, RecordAny, SearchParams, SearchResponse } from 'meilisearch'
 import { useToast } from 'primevue/usetoast'
 import { useMeilisearchStore } from '@/stores/meilisearch'
 import { usePagination } from '@/composables/usePagination'

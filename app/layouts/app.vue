@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue'
 import { useAppLayout } from '@/composables/useAppLayout'
 import SelectColorModePopoverButton from '@/components/SelectColorModePopoverButton.vue'
 import ChangeInstanceModal from '@/components/meilisearch/ChangeInstanceModal.vue'

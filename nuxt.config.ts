@@ -13,8 +13,14 @@ export default defineNuxtConfig({
     },
     compatibilityDate: '2025-07-15',
     css: ['~/assets/css/main.css'],
-    devtools: { enabled: true },
+    devtools: { enabled: false },
     modules: ['@primevue/nuxt-module', '@nuxt/fonts', '@pinia/nuxt'],
+    runtimeConfig: {
+        public: {
+            meilisearchHost: '',
+            meilisearchApiKey: '',
+        },
+    },
     primevue: {
         options: {
             theme: {

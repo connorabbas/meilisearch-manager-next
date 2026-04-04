@@ -21,7 +21,7 @@ body {
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
-    --font-display: "Inter", "sans-serif";
+    --font-sans: "Inter", sans-serif;
     --header-height: 4rem;
 
     --color-meili-50: oklch(0.949 0.011 292.08);

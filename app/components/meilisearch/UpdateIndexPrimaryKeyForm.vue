@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
 import { useIndexes } from '@/composables/meilisearch/useIndexes'
 import type { Index } from 'meilisearch'
 import InputErrors from '@/components/InputErrors.vue'

@@ -1,5 +1,4 @@
-import { computed, reactive, ref, watch } from 'vue'
-import { FilterableAttributes, SortableAttributes, type EnqueuedTask, type Settings, type Task } from 'meilisearch'
+import type { FilterableAttributes, SortableAttributes, EnqueuedTask, Settings, Task } from 'meilisearch'
 import { useToast } from 'primevue/usetoast'
 import { useMeilisearchStore } from '@/stores/meilisearch'
 import { useTasks } from './useTasks'

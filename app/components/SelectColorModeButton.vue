@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { ref, watchEffect, inject } from 'vue'
 import { Sun, Moon, Monitor } from '@lucide/vue'
 import type { UseColorModeReturn } from '@vueuse/core'
 

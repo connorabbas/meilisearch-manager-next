@@ -3,7 +3,9 @@ import { formatDate, formatBytes } from '@/utils'
 import { Clock, Database, FolderSearch, GitPullRequestArrow } from '@lucide/vue'
 import { useStats } from '@/composables/meilisearch/useStats'
 
-const breadcrumbs = [{ label: 'Dashboard' }]
+definePageMeta({
+    layout: 'app',
+})
 
 const { instanceStats, version, fetchStats, fetchVersion } = useStats()
 

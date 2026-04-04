@@ -11,7 +11,7 @@ const props = defineProps<{
         variant="link"
     >
         <NuxtLink
-            :to="{ name: 'welcome' }"
+            to="/"
             :class="slotProps?.class"
             class="flex items-center justify-start gap-4 no-underline! p-0 rounded-none"
         >

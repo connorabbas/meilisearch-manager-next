@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { computed, useTemplateRef } from 'vue'
 import SelectColorModeButton from '@/components/SelectColorModeButton.vue'
 import Popover from 'primevue/popover'
 import { SunMoon } from '@lucide/vue'

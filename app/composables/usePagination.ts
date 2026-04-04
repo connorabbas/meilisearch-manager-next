@@ -1,5 +1,4 @@
-import { computed, ref } from 'vue'
-import { DataTablePageEvent, PageState } from 'primevue'
+import type { DataTablePageEvent, PageState } from 'primevue'
 
 export function usePagination(initialPerPage: number = 20) {
     const currentPage = ref(1)

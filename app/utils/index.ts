@@ -1,5 +1,4 @@
 import { twMerge } from 'tailwind-merge'
-import { mergeProps } from 'vue'
 
 export const ptViewMerge = (
     globalPTProps = {} as any,
@@ -9,12 +8,12 @@ export const ptViewMerge = (
     const { class: globalClass, ...globalRest } = globalPTProps
     const { class: selfClass, ...selfRest } = selfPTProps
 
-    return mergeProps(
-        { class: twMerge(globalClass, selfClass) },
-        globalRest,
-        selfRest,
-        datasets
-    )
+    return {
+        ...globalRest,
+        ...selfRest,
+        ...datasets,
+        class: twMerge(globalClass, selfClass, datasets?.class),
+    }
 }
 
 export const formatDate = (date: Date | string): string => {

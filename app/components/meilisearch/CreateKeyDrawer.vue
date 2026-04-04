@@ -1,11 +1,9 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
 import { useKeys } from '@/composables/meilisearch/useKeys'
 import { useIndexes } from '@/composables/meilisearch/useIndexes'
 import type { KeyCreation } from 'meilisearch'
 import { useToast } from 'primevue'
-import { CircleQuestionMark, Info } from 'lucide-vue-next'
-import { toRaw } from 'vue'
+import { CircleQuestionMark, Info } from '@lucide/vue'
 import { keyActions } from '@/utils/data'
 
 const drawerOpen = defineModel<boolean>({ default: false })

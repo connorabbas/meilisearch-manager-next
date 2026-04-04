@@ -1,7 +1,6 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
 import { useStats } from '@/composables/meilisearch/useStats'
-import { ArrowRight, Home, Plus, RefreshCw } from '@lucide/vue'
+import { Home, Plus, RefreshCw } from '@lucide/vue'
 import PageTitleSection from '@/components/PageTitleSection.vue'
 import { useIndexes } from '@/composables/meilisearch/useIndexes'
 import CreateIndexDrawer from '@/components/meilisearch/CreateIndexDrawer.vue'
@@ -150,7 +149,7 @@ const indexesData = computed(() => {
                                 {{ formatDate((data as Index).updatedAt as Date) }}
                             </template>
                         </Column> -->
-                        <Column
+                        <!-- <Column
                             header="Action"
                             frozen
                             alignFrozen="right"
@@ -170,7 +169,7 @@ const indexesData = computed(() => {
                                     </NuxtLink>
                                 </Button>
                             </template>
-                        </Column>
+                        </Column> -->
                     </DataTable>
                 </template>
             </Card>

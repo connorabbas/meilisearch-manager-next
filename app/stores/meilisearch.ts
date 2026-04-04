@@ -1,4 +1,3 @@
-import { ref, shallowRef, computed, readonly } from 'vue'
 import { Meilisearch } from 'meilisearch'
 import { useToast } from 'primevue/usetoast'
 import { useConfirm } from "primevue/useconfirm"
@@ -14,9 +13,10 @@ export interface MeilisearchInstanceConfig {
 export const useMeilisearchStore = defineStore('meilisearch', () => {
     const toast = useToast()
     const confirm = useConfirm()
+    const runtimeConfig = useRuntimeConfig()
 
-    const hostEnv = import.meta.env.NUXT_MEILISEARCH_HOST
-    const apiKeyEnv = import.meta.env.NUXT_MEILISEARCH_API_KEY
+    const hostEnv = String(runtimeConfig.public.meilisearchHost ?? '')
+    const apiKeyEnv = String(runtimeConfig.public.meilisearchApiKey ?? '')
     const singleInstanceMode = !!hostEnv && !!apiKeyEnv
 
     const instances = singleInstanceMode
@@ -33,6 +33,7 @@ export const useMeilisearchStore = defineStore('meilisearch', () => {
         : useStorage<string | null>('meilisearch-current-id', null)
 
     const currentInstance = computed(() => instances.value.find(i => i.id === currentInstanceId.value) ?? null)
+    const hasConfiguredInstance = computed(() => instances.value.length > 0)
 
     const client = shallowRef<Meilisearch | null>(null)
     const isConnecting = ref(false)
@@ -49,7 +50,7 @@ export const useMeilisearchStore = defineStore('meilisearch', () => {
     }
 
     async function connect(id?: string) {
-        const targetId = id ?? currentInstanceId.value
+        let targetId = id ?? currentInstanceId.value ?? instances.value[0]?.id ?? null
         if (!targetId) {
             throw new Error('No instance selected')
         }
@@ -59,8 +60,12 @@ export const useMeilisearchStore = defineStore('meilisearch', () => {
         isConnecting.value = true
         connectionError.value = null
         try {
-            const inst = instances.value.find(i => i.id === targetId)
+            let inst = instances.value.find(i => i.id === targetId)
             if (!inst) {
+                inst = instances.value[0]
+                targetId = inst?.id ?? null
+            }
+            if (!inst || !targetId) {
                 throw new Error('Instance not found')
             }
             const conn = new Meilisearch({ host: inst.host, apiKey: inst.apiKey })
@@ -177,6 +182,7 @@ export const useMeilisearchStore = defineStore('meilisearch', () => {
         isConnected,
         connectionError: readonly(connectionError),
         singleInstanceMode,
+        hasConfiguredInstance,
         instances: readonly(instances),
         currentInstance: readonly(currentInstance),
         connect,

@@ -1,5 +1,4 @@
-import { ref, watch, computed } from 'vue'
-import { RecordAny, type EnqueuedTask, type Index, type IndexesQuery, type IndexesResults, type IndexOptions, type Task } from 'meilisearch'
+import type { RecordAny, EnqueuedTask, Index, IndexesQuery, IndexesResults, IndexOptions, Task } from 'meilisearch'
 import { useToast } from 'primevue/usetoast'
 import { useConfirm } from "primevue/useconfirm"
 import { useMeilisearchStore } from '@/stores/meilisearch'

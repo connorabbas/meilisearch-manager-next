@@ -1,5 +1,4 @@
-import { ref, watch } from 'vue'
-import { SearchForFacetValuesParams, SearchForFacetValuesResponse } from 'meilisearch'
+import type { SearchForFacetValuesParams, SearchForFacetValuesResponse } from 'meilisearch'
 import { useToast } from 'primevue/usetoast'
 import { useMeilisearchStore } from '@/stores/meilisearch'
 

@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { ref, useTemplateRef } from 'vue'
 import Breadcrumb, { type BreadcrumbPassThroughOptions, type BreadcrumbProps } from 'primevue/breadcrumb'
 import { ChevronRight } from '@lucide/vue'
 import type { MenuItem } from '@/types'

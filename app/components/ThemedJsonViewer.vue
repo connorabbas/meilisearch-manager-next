@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { computed, inject, ref, watch } from 'vue'
 import type { UseColorModeReturn } from '@vueuse/core'
 import { JsonViewer } from "vue3-json-viewer"
 import { prefersDarkColorScheme } from '@/utils'

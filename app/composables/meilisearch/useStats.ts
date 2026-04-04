@@ -1,4 +1,3 @@
-import { ref, watch } from 'vue'
 import { type IndexStats, type Stats, type Version } from 'meilisearch'
 import { useToast } from 'primevue/usetoast'
 import { useMeilisearchStore } from '@/stores/meilisearch'

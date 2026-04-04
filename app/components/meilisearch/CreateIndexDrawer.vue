@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue'
 import { useIndexes } from '@/composables/meilisearch/useIndexes'
 import type { IndexOptions } from 'meilisearch'
 

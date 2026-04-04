@@ -1,8 +1,7 @@
 <script setup lang="ts">
-import { ref } from 'vue'
 import { useMeilisearchStore } from '@/stores/meilisearch'
 import { useRoute, useRouter } from 'vue-router'
-import { Plus } from 'lucide-vue-next'
+import { Plus } from '@lucide/vue'
 
 const modalOpen = defineModel<boolean>({ default: false })
 

@@ -1,6 +1,5 @@
-import { ref, computed, onMounted, onUnmounted, watchEffect } from 'vue'
-import { LayoutDashboard, ListCheck, KeyRound, FolderSearch, Plus, ArrowLeftRight, Trash2 } from '@lucide/vue'
-import { type MenuItem } from '@/types'
+import { LayoutDashboard, FolderSearch, Plus, ArrowLeftRight, Trash2 } from '@lucide/vue'
+import type { MenuItem } from '@/types'
 import { useMeilisearchStore } from '@/stores/meilisearch'
 
 export function useAppLayout() {
@@ -23,16 +22,16 @@ export function useAppLayout() {
         {
             label: 'Dashboard',
             lucideIcon: LayoutDashboard,
-            route: { name: 'dashboard' },
+            route: '/dashboard',
             active: isActiveRoute('dashboard'),
         },
         {
             label: 'Indexes',
             lucideIcon: FolderSearch,
-            route: { name: 'indexes' },
+            route: '/indexes',
             active: isActiveRoute('indexes') || currentPath.value.startsWith('/indexes'),
         },
-        {
+        /* {
             label: 'Tasks',
             lucideIcon: ListCheck,
             route: { name: 'tasks' },
@@ -43,7 +42,7 @@ export function useAppLayout() {
             lucideIcon: KeyRound,
             route: { name: 'keys' },
             active: isActiveRoute('keys'),
-        },
+        }, */
         /* {
             label: 'Meilisearch Docs',
             lucideIcon: BookText,
@@ -58,7 +57,7 @@ export function useAppLayout() {
         {
             label: 'New Instance',
             lucideIcon: Plus,
-            route: { name: 'new-instance' },
+            route: '/new-instance',
         },
         {
             label: 'Change Instance',
@@ -73,7 +72,7 @@ export function useAppLayout() {
             command: async () => {
                 if (meilisearchStore?.currentInstance?.id) {
                     meilisearchStore.confirmRemoveInstance(meilisearchStore.currentInstance.id, async () => {
-                        await router.push({ name: 'dashboard' })
+                        await router.push('/dashboard')
                         router.go(0)
                     })
                 }

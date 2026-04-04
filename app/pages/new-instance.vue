@@ -1,18 +1,16 @@
 <script setup lang="ts">
-import { reactive } from 'vue'
 import { useMeilisearchStore } from '@/stores/meilisearch'
 import LogoLink from '@/components/LogoLink.vue'
 import Container from '@/components/Container.vue'
 import { Form, type FormSubmitEvent } from '@primevue/forms'
 import { zodResolver } from '@primevue/forms/resolvers/zod'
 import { z } from 'zod'
-import { useRouter } from 'vue-router'
-import { useToast } from 'primevue'
+import { useToast } from 'primevue/usetoast'
 import { BookText, FolderGit2, LayoutDashboard } from '@lucide/vue'
 
 const meilisearchStore = useMeilisearchStore()
-const router = useRouter()
 const toast = useToast()
+const isSubmitting = ref(false)
 
 type NewInstanceForm = {
     name: string,
@@ -34,23 +32,26 @@ const resolver = zodResolver(
 )
 
 async function submitNewInstance(event: FormSubmitEvent) {
-    if (event.valid) {
-        const formData = event.values as NewInstanceForm
-        try {
-            await meilisearchStore.addInstance(formData)
-            router.push({ name: 'dashboard' }).then(() => {
-                toast.add({
-                    severity: 'success',
-                    summary: 'Instance Added',
-                    detail: `Successfully added MeiliSearch instance: ${formData.name}`,
-                    life: 5000,
-                })
-            })
-        } catch (err) {
-            console.error('Failed to add new Meilisearch instance...', err)
-        } finally {
-            //
-        }
+    if (!event.valid || isSubmitting.value) {
+        return
+    }
+
+    const formData = event.values as NewInstanceForm
+    isSubmitting.value = true
+
+    try {
+        await meilisearchStore.addInstance(formData)
+        await navigateTo('/dashboard')
+        toast.add({
+            severity: 'success',
+            summary: 'Instance Added',
+            detail: `Successfully added MeiliSearch instance: ${formData.name}`,
+            life: 5000,
+        })
+    } catch (err) {
+        console.error('Failed to add new Meilisearch instance...', err)
+    } finally {
+        isSubmitting.value = false
     }
 }
 </script>
@@ -177,6 +178,8 @@ async function submitNewInstance(event: FormSubmitEvent) {
                         <div>
                             <Button
                                 type="submit"
+                                :loading="isSubmitting"
+                                :disabled="isSubmitting"
                                 label="Connect"
                                 fluid
                             />
@@ -185,7 +188,7 @@ async function submitNewInstance(event: FormSubmitEvent) {
                 </template>
             </Card>
             <div class="flex justify-center items-center gap-6 mt-4">
-                <NuxtLink :to="{ name: 'dashboard' }">
+                <NuxtLink to="/dashboard">
                     <Button
                         class="p-0"
                         variant="link"

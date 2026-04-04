@@ -1,0 +1,50 @@
+@import "tailwindcss";
+@import "tailwindcss-primeui";
+
+html {
+    /* font size will determine the component/utility scaling */
+    font-size: 14px;
+    line-height: 1.15;
+}
+
+body {
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+.lucide {
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+}
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+    --font-display: "Inter", "sans-serif";
+    --header-height: 4rem;
+
+    --color-meili-50: oklch(0.949 0.011 292.08);
+    --color-meili-100: oklch(0.898 0.022 291.76);
+    --color-meili-200: oklch(0.805 0.043 291.34);
+    --color-meili-300: oklch(0.703 0.068 292.37);
+    --color-meili-400: oklch(0.61 0.09 291.92);
+    --color-meili-500: oklch(0.513 0.109 291.27);
+    --color-meili-600: oklch(0.44 0.104 291.42);
+    --color-meili-700: oklch(0.361 0.084 290.75);
+    --color-meili-800: oklch(0.29 0.069 290.87);
+    --color-meili-900: oklch(0.212 0.048 290.89);
+    --color-meili-950: oklch(0.167 0.041 290.5);
+}
+
+@utility dynamic-bg {
+    @apply bg-surface-0 dark:bg-surface-900;
+}
+
+@utility dynamic-border {
+    @apply border-surface-200 dark:border-surface-800;
+}
+
+@utility delete-menu-item {
+    @apply text-red-500 dark:text-red-400 hover:bg-red-500/10 rounded-[var(--p-menu-item-border-radius)] transition-colors duration-[var(--p-menu-transition-duration)];
+}

@@ -1,0 +1,48 @@
+// https://aka.ms/devcontainer.json
+{
+    "name": "Nuxt Starter",
+    "dockerComposeFile": [
+        "../docker-compose.dev.yml"
+    ],
+    "service": "nuxt",
+    "workspaceFolder": "/workspace",
+    "mounts": [
+        "type=bind,source=/home/${localEnv:USER}/.ssh,target=/home/node/.ssh,readonly",
+        "type=bind,source=/home/${localEnv:USER}/.config/opencode,target=/home/node/.config/opencode",
+        "type=bind,source=/home/${localEnv:USER}/.local/share/opencode,target=/home/node/.local/share/opencode",
+        "type=bind,source=/home/${localEnv:USER}/.local/state/opencode,target=/home/node/.local/state/opencode"
+    ],
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "eamodio.gitlens",
+                "esbenp.prettier-vscode",
+                "mikestead.dotenv",
+                "streetsidesoftware.code-spell-checker",
+                "hollowtree.vue-snippets",
+                "Vue.volar",
+                "dbaeumer.vscode-eslint",
+                "EditorConfig.EditorConfig",
+                "bradlc.vscode-tailwindcss",
+                "shd101wyy.markdown-preview-enhanced",
+                "formulahendry.auto-rename-tag",
+                "pmneo.tsimporter"
+            ],
+            "settings": {
+                "terminal.integrated.shell.linux": "/bin/bash",
+                "html.format.wrapAttributes": "force-expand-multiline",
+                "js/ts.preferences.quoteStyle": "single",
+                "js/ts.format.semicolons": "remove",
+                "[vue]": {
+                    "editor.defaultFormatter": "Vue.volar",
+                    "editor.tabSize": 4
+                }
+            }
+        }
+    },
+    "postCreateCommand": "chown -R 1000:1000 /workspace && npm install",
+    "remoteUser": "node"
+    // "forwardPorts": [],
+    // "runServices": [],
+    // "shutdownAction": "none",
+}

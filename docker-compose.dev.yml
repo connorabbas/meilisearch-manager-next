@@ -1,0 +1,23 @@
+services:
+  nuxt:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: meilisearch-manager-pro
+    hostname: meilisearch-manager-pro
+    entrypoint: /bin/bash
+    working_dir: /workspace
+    volumes:
+      - '.:/workspace'
+    tty: true
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.meilisearch-manager-pro.rule=Host(`meilisearch-manager-pro.localhost`)"
+      - "traefik.http.services.meilisearch-manager-pro.loadbalancer.server.port=${NUXT_APP_PORT:-3000}"
+    networks:
+      - proxy
+
+networks:
+  proxy: # setup in separate compose file
+    name: "traefik_proxy"
+    external: true

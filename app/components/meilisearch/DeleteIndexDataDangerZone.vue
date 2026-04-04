@@ -6,13 +6,12 @@ const props = defineProps<{
     indexUid: string,
 }>()
 
-const router = useRouter()
 const { confirmDeleteIndex } = useIndexes()
 const { confirmDeleteAllDocuments } = useDocuments()
 
 function handleDeleteIndex() {
-    confirmDeleteIndex(props.indexUid, () => {
-        router.push({ name: 'dashboard' })
+    confirmDeleteIndex(props.indexUid, undefined, () => {
+        navigateTo('/dashboard')
     })
 }
 function handleDeleteAllDocuments() {

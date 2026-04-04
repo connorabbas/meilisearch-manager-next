@@ -8,7 +8,11 @@ import NotFoundMessage from '@/components/NotFoundMessage.vue'
 //import { formatDate } from '@/utils';
 //import { Index } from 'meilisearch';
 
-const breadcrumbs = [{ route: { name: 'dashboard' }, lucideIcon: Home }, { label: 'Indexes' }]
+definePageMeta({
+    layout: 'app',
+    pageTitle: 'Indexes',
+    breadcrumbs: [{ route: { name: 'dashboard' }, lucideIcon: Home }, { label: 'Indexes' }]
+})
 
 const { instanceStats, isFetching: isFetchingStats, fetchStats } = useStats()
 const {
@@ -25,6 +29,7 @@ async function fetchData() {
     await Promise.all([
         fetchStats(),
         fetchIndexesPaginated(),
+        new Promise<void>((resolve) => setTimeout(resolve, 2000)), // simulates slow API response
     ])
 }
 await fetchData()
@@ -42,97 +47,99 @@ const indexesData = computed(() => {
 </script>
 
 <template>
-    <div>
+    <Teleport to="body">
         <CreateIndexDrawer
             v-model="createIndexDrawerOpen"
             @index-created="fetchData"
         />
+    </Teleport>
 
-        <PageTitleSection>
-            <template #title>
-                Indexes
-            </template>
-            <template #end>
-                <div class="flex gap-4">
-                    <Button
-                        severity="secondary"
-                        label="Refresh"
-                        :loading="isFetchingIndexes || isFetchingStats"
-                        @click="fetchData"
+    <PageTitleSection>
+        <template #title>
+            Indexes
+        </template>
+        <template #end>
+            <div class="flex gap-4">
+                <Button
+                    severity="secondary"
+                    label="Refresh"
+                    :loading="isFetchingIndexes || isFetchingStats"
+                    @click="fetchData"
+                >
+                    <template #icon>
+                        <RefreshCw />
+                    </template>
+                    <template #loadingicon>
+                        <RefreshCw class="animate-spin" />
+                    </template>
+                </Button>
+                <Button
+                    label="New Index"
+                    @click="createIndexDrawerOpen = true"
+                >
+                    <template #icon>
+                        <Plus />
+                    </template>
+                </Button>
+            </div>
+        </template>
+    </PageTitleSection>
+
+    <div>
+        <Card>
+            <template #content>
+                <DataTable
+                    lazy
+                    paginator
+                    scrollable
+                    :loading="isFetchingIndexes"
+                    :value="indexesData"
+                    :rows="perPage"
+                    :first="firstDatasetIndex"
+                    :totalRecords="indexesResults?.total"
+                    :rowsPerPageOptions="[20, 50, 100]"
+                    :pt="{
+                        tableContainer: {
+                            id: 'indexes-data-table-container'
+                        },
+                        thead: {
+                            class: 'z-2'
+                        }
+                    }"
+                    scrollHeight="500px"
+                    paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
+                    currentPageReportTemplate="Showing {first} to {last} of {totalRecords} records"
+                    @page="handlePageEvent($event, () => fetchIndexesPaginated(), true, 'indexes-data-table-container')"
+                >
+                    <template #empty>
+                        <NotFoundMessage subject="Index" />
+                    </template>
+                    <Column
+                        field="uid"
+                        header="UID"
+                    />
+                    <Column
+                        field="primaryKey"
+                        header="Primary Key"
                     >
-                        <template #icon>
-                            <RefreshCw />
+                        <template #body="{ data }">
+                            <Tag
+                                v-if="data.primaryKey"
+                                :value="data.primaryKey"
+                                severity="info"
+                            />
+                            <Tag
+                                v-else
+                                value="Not Set"
+                                severity="secondary"
+                            />
                         </template>
-                        <template #loadingicon>
-                            <RefreshCw class="animate-spin" />
-                        </template>
-                    </Button>
-                    <Button
-                        label="New Index"
-                        @click="createIndexDrawerOpen = true"
-                    >
-                        <template #icon>
-                            <Plus />
-                        </template>
-                    </Button>
-                </div>
-            </template>
-        </PageTitleSection>
-        <div>
-            <Card>
-                <template #content>
-                    <DataTable
-                        lazy
-                        paginator
-                        scrollable
-                        :loading="isFetchingIndexes"
-                        :value="indexesData"
-                        :rows="perPage"
-                        :first="firstDatasetIndex"
-                        :totalRecords="indexesResults?.total"
-                        :rowsPerPageOptions="[20, 50, 100]"
-                        :pt="{
-                            tableContainer: {
-                                id: 'indexes-data-table-container'
-                            },
-                            thead: {
-                                class: 'z-2'
-                            }
-                        }"
-                        scrollHeight="500px"
-                        paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
-                        currentPageReportTemplate="Showing {first} to {last} of {totalRecords} records"
-                        @page="handlePageEvent($event, () => fetchIndexesPaginated(), true, 'indexes-data-table-container')"
-                    >
-                        <template #empty>
-                            <NotFoundMessage subject="Index" />
-                        </template>
-                        <Column
-                            field="uid"
-                            header="UID"
-                        />
-                        <Column
-                            field="primaryKey"
-                            header="Primary Key"
-                        >
-                            <template #body="{ data }">
-                                <Tag
-                                    v-if="data.primaryKey"
-                                    :value="data.primaryKey"
-                                    severity="info"
-                                />
-                                <Tag
-                                    v-else
-                                    value="Not Set"
-                                    severity="secondary"
-                                />
-                            </template>
-                        </Column>
-                        <Column
-                            field="numberOfDocuments"
-                            header="Documents"
-                        />
-                        <!-- <Column
+                    </Column>
+                    <Column
+                        field="numberOfDocuments"
+                        header="Documents"
+                    />
+                    <!-- <Column
                             field="createdAt"
                             header="Created"
                         >
@@ -149,7 +156,7 @@ const indexesData = computed(() => {
                                 {{ formatDate((data as Index).updatedAt as Date) }}
                             </template>
                         </Column> -->
-                        <!-- <Column
+                    <!-- <Column
                             header="Action"
                             frozen
                             alignFrozen="right"
@@ -161,7 +168,7 @@ const indexesData = computed(() => {
                                     outlined
                                 >
                                     <NuxtLink
-                                        :to="{ name: 'index-details', params: { indexUid: data.uid } }"
+                                        :to=""
                                         :class="[slotProps.class, 'no-underline']"
                                     >
                                         View
@@ -170,9 +177,8 @@ const indexesData = computed(() => {
                                 </Button>
                             </template>
                         </Column> -->
-                    </DataTable>
-                </template>
-            </Card>
-        </div>
+                </DataTable>
+            </template>
+        </Card>
     </div>
 </template>

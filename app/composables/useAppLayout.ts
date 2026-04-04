@@ -5,7 +5,6 @@ import { useMeilisearchStore } from '@/stores/meilisearch'
 export function useAppLayout() {
     const meilisearchStore = useMeilisearchStore()
     const route = useRoute()
-    const router = useRouter()
 
     const currentRoute = computed(() => route.name)
     const currentPath = computed(() => route.path)
@@ -72,8 +71,16 @@ export function useAppLayout() {
             command: async () => {
                 if (meilisearchStore?.currentInstance?.id) {
                     meilisearchStore.confirmRemoveInstance(meilisearchStore.currentInstance.id, async () => {
-                        await router.push('/dashboard')
-                        router.go(0)
+                        if (!meilisearchStore.hasConfiguredInstance) {
+                            await navigateTo('/new-instance', { replace: true })
+                            return
+                        }
+
+                        try {
+                            await meilisearchStore.connect()
+                        } catch {}
+
+                        await navigateTo('/dashboard', { replace: true })
                     })
                 }
             },

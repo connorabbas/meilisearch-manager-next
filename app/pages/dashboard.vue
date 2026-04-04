@@ -2,12 +2,17 @@
 import { formatDate, formatBytes } from '@/utils'
 import { Clock, Database, FolderSearch, GitPullRequestArrow } from '@lucide/vue'
 import { useStats } from '@/composables/meilisearch/useStats'
+import { useMeilisearchStore } from '@/stores/meilisearch'
 
 definePageMeta({
     layout: 'app',
+    pageTitle: 'dashboard',
+    breadcrumbs: [{ label: 'Dashboard' }]
 })
 
 const { instanceStats, version, fetchStats, fetchVersion } = useStats()
+const meilisearchStore = useMeilisearchStore()
+const currentInstanceId = computed(() => meilisearchStore.currentInstance?.id ?? null)
 
 async function fetchData() {
     await Promise.all([
@@ -15,7 +20,18 @@ async function fetchData() {
         fetchVersion(),
     ])
 }
-await fetchData()
+
+watch(currentInstanceId, async (instanceId, previousInstanceId) => {
+    if (!instanceId) {
+        return
+    }
+
+    if (instanceId !== previousInstanceId) {
+        await meilisearchStore.connect(instanceId)
+    }
+
+    await fetchData()
+}, { immediate: true })
 </script>
 
 <template>

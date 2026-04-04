@@ -11,11 +11,10 @@ import PanelMenu from '@/components/router-link-menus/PanelMenu.vue'
 import Breadcrumb from '@/components/router-link-menus/Breadcrumb.vue'
 import type { MenuItem } from '@/types'
 
-const props = withDefaults(defineProps<{
-    breadcrumbs?: MenuItem[],
-}>(), {
-    breadcrumbs: () => [],
-})
+const route = useRoute()
+
+const pageTitle = computed(() => route.meta.pageTitle as string)
+const breadcrumbs = computed(() => route.meta.breadcrumbs as MenuItem[])
 
 const {
     currentRoute,
@@ -145,8 +144,8 @@ onUnmounted(() => {
                     <Container vertical>
                         <!-- Breadcrumbs -->
                         <Breadcrumb
-                            v-if="props.breadcrumbs.length"
-                            :model="props.breadcrumbs"
+                            v-if="breadcrumbs?.length"
+                            :model="breadcrumbs"
                         />
                         <!-- Page Content -->
                         <slot />

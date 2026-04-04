@@ -144,7 +144,7 @@ export const useMeilisearchStore = defineStore('meilisearch', () => {
 
     function confirmRemoveInstance(
         id: string,
-        onRemovedCallback?: () => void
+        onRemovedCallback?: () => void | Promise<void>
     ) {
         confirm.require({
             group: 'delete',
@@ -162,7 +162,7 @@ export const useMeilisearchStore = defineStore('meilisearch', () => {
             },
             accept: async () => {
                 removeInstance(id)
-                onRemovedCallback?.()
+                await onRemovedCallback?.()
             },
         })
     }

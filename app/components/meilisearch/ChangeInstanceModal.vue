@@ -1,12 +1,9 @@
 <script setup lang="ts">
 import { useMeilisearchStore } from '@/stores/meilisearch'
-import { useRoute, useRouter } from 'vue-router'
 import { Plus } from '@lucide/vue'
 
 const modalOpen = defineModel<boolean>({ default: false })
 
-const route = useRoute()
-const router = useRouter()
 const meilisearchStore = useMeilisearchStore()
 
 const currentInstanceId = ref(meilisearchStore.currentInstance?.id)
@@ -15,7 +12,7 @@ async function handleChangeInstance() {
     if (currentInstanceId.value) {
         meilisearchStore.setCurrent(currentInstanceId.value)
         modalOpen.value = false
-        await router.push(route.name === 'dashboard' ? { name: 'indexes' } : { name: 'dashboard' })
+        await navigateTo('/dashboard', { replace: true })
     }
 }
 </script>
@@ -41,7 +38,7 @@ async function handleChangeInstance() {
             >
                 <template #footer>
                     <div class="p-2">
-                        <NuxtLink :to="{ name: 'new-instance' }">
+                        <NuxtLink to="/new-instance">
                             <Button
                                 label="Add new instance"
                                 severity="secondary"

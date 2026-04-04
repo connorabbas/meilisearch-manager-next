@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { UseColorModeReturn } from '@vueuse/core'
-import { JsonViewer } from "vue3-json-viewer"
+import { JsonViewer } from 'vue3-json-viewer'
 import { prefersDarkColorScheme } from '@/utils'
 
 const props = defineProps<{

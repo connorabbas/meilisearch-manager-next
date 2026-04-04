@@ -39,7 +39,12 @@ const fileUploader = useTemplateRef<FileUploadType>('document-file-uploader')
 const fileUploaderChanged = ref(0)
 async function handleUpload(event: FileUploadSelectEvent) {
     const files: File[] = event.files as File[]
-    const fileText = await readFileAsText(files[0])
+    const file = files[0]
+    if (!file) {
+        return
+    }
+
+    const fileText = await readFileAsText(file)
     newDocumentsAsString.value = fileText
 }
 function handleUploaderReset() {

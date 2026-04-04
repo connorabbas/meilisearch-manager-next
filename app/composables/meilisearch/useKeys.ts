@@ -1,4 +1,4 @@
-import { type Key, type KeyCreation, type KeysQuery, type KeysResults, type KeyUpdate } from 'meilisearch'
+import type { Key, KeyCreation, KeysQuery, KeysResults, KeyUpdate } from 'meilisearch'
 import { useToast } from 'primevue/usetoast'
 import { useMeilisearchStore } from '@/stores/meilisearch'
 import { useConfirm } from 'primevue'
@@ -87,7 +87,7 @@ export function useKeys() {
         }
     }
 
-    async function deleteKey(id: string): Promise<void | undefined> {
+    async function deleteKey(id: string): Promise<void> {
         const client = meilisearchStore.getClient()
         if (!client) {
             error.value = 'Meilisearch client not connected'

@@ -104,236 +104,238 @@ onMounted(() => {
 </script>
 
 <template>
-    <Teleport to="body">
-        <Drawer
-            v-model:visible="showTaskDrawerOpen"
-            :header="taskHeaderTitle"
-            class="w-full sm:w-[60rem]"
-            position="right"
-            blockScroll
-            @hide="currentTask = null"
-        >
-            <div>
-                <ThemedJsonEditor
-                    v-model="currentTask"
-                    :mode="Mode.text"
-                    :main-menu-bar="false"
-                    :stringified="false"
-                    read-only
-                />
-            </div>
-        </Drawer>
-    </Teleport>
-
-    <PageTitleSection>
-        <template #title>
-            Tasks
-        </template>
-        <template #end>
-            <div class="flex flex-wrap items-center gap-4">
-                <div
-                    v-tooltip.top="'Poll tasks every 5 seconds'"
-                    class="flex items-center gap-3"
-                >
-                    <div
-                        v-if="tasksPollingEnabled"
-                        class="relative flex h-3 w-3 group"
-                    >
-                        <span
-                            class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"
-                        ></span>
-                        <span
-                            class="relative inline-flex rounded-full h-3 w-3 bg-green-400"
-                        ></span>
-                    </div>
-                    <label for="tasks-polling-toggle">Poll</label>
-                    <ToggleSwitch
-                        v-model="tasksPollingEnabled"
-                        inputId="tasks-polling-toggle"
+    <div class="flex flex-col gap-4 md:gap-8">
+        <Teleport to="body">
+            <Drawer
+                v-model:visible="showTaskDrawerOpen"
+                :header="taskHeaderTitle"
+                class="w-full sm:w-[60rem]"
+                position="right"
+                blockScroll
+                @hide="currentTask = null"
+            >
+                <div>
+                    <ThemedJsonEditor
+                        v-model="currentTask"
+                        :mode="Mode.text"
+                        :main-menu-bar="false"
+                        :stringified="false"
+                        read-only
                     />
                 </div>
-                <div>
-                    <Button
-                        severity="secondary"
-                        label="Refresh"
-                        :loading="isFetchingTasks"
-                        @click="refreshTasksList()"
-                    >
-                        <template #icon>
-                            <RefreshCw />
-                        </template>
-                        <template #loadingicon>
-                            <RefreshCw class="animate-spin" />
-                        </template>
-                    </Button>
-                </div>
-                <div>
-                    <InputGroup>
-                        <InputGroupAddon>
-                            Limit
-                        </InputGroupAddon>
-                        <Select
-                            v-model="tasksParams.limit"
-                            :options="[20, 50, 100, 500]"
-                        />
-                    </InputGroup>
-                </div>
-            </div>
-        </template>
-    </PageTitleSection>
+            </Drawer>
+        </Teleport>
 
-    <Card>
-        <template #content>
-            <DataTable
-                :value="tasks"
-                :loading="isFetchingTasks"
-                scrollable
-                columnResizeMode="fit"
-                filterDisplay="row"
-            >
-                <template #empty>
-                    <NotFoundMessage subject="Task" />
-                </template>
-                <Column
-                    field="uid"
-                    header="UID"
-                />
-                <Column
-                    field="status"
-                    header="Status"
-                    :showFilterMenu="false"
-                >
-                    <template #filter>
-                        <MultiSelect
-                            v-model="tasksParams.statuses"
-                            pt:label:class="flex flex-wrap"
-                            pt:overlay:class="z-1!"
-                            :options="[
-                                'enqueued',
-                                'processing',
-                                'succeeded',
-                                'failed',
-                                'canceled',
-                            ]"
-                            display="chip"
-                            placeholder="Filter by status"
-                            :showToggleAll="false"
-                            showClear
-                            fluid
+        <PageTitleSection>
+            <template #title>
+                Tasks
+            </template>
+            <template #end>
+                <div class="flex flex-wrap items-center gap-4">
+                    <div
+                        v-tooltip.top="'Poll tasks every 5 seconds'"
+                        class="flex items-center gap-3"
+                    >
+                        <div
+                            v-if="tasksPollingEnabled"
+                            class="relative flex h-3 w-3 group"
                         >
-                            <template #option="{ option }">
-                                <Tag
-                                    :value="option"
-                                    :severity="getStatusSeverity(option)"
-                                />
-                            </template>
-                        </MultiSelect>
-                    </template>
-                    <template #body="{ data }">
-                        <Tag
-                            :value="data.status"
-                            :severity="getStatusSeverity(data.status)"
+                            <span
+                                class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"
+                            />
+                            <span
+                                class="relative inline-flex rounded-full h-3 w-3 bg-green-400"
+                            />
+                        </div>
+                        <label for="tasks-polling-toggle">Poll</label>
+                        <ToggleSwitch
+                            v-model="tasksPollingEnabled"
+                            inputId="tasks-polling-toggle"
                         />
-                    </template>
-                </Column>
-                <Column
-                    field="type"
-                    header="Type"
-                    :showFilterMenu="false"
-                    showClearButton
-                >
-                    <template #filter>
-                        <MultiSelect
-                            v-model="tasksParams.types"
-                            pt:label:class="flex flex-wrap"
-                            pt:overlay:class="z-1!"
-                            :options="[
-                                'documentAdditionOrUpdate',
-                                'documentEdition',
-                                'documentDeletion',
-                                'settingsUpdate',
-                                'indexCreation',
-                                'indexDeletion',
-                                'indexUpdate',
-                                'indexSwap',
-                                'taskCancelation',
-                                'taskDeletion',
-                                'dumpCreation',
-                                'snapshotCreation',
-                                'upgradeDatabase',
-                            ]"
-                            display="chip"
-                            placeholder="Filter by type"
-                            :showToggleAll="false"
-                            showClear
-                            filter
-                            fluid
-                        />
-                    </template>
-                </Column>
-                <Column
-                    field="indexUid"
-                    header="Index"
-                    :showFilterMenu="false"
-                >
-                    <template #filter>
-                        <MultiSelect
-                            v-model="tasksParams.indexUids"
-                            pt:label:class="flex flex-wrap"
-                            pt:overlay:class="z-1!"
-                            :options="indexUids"
-                            display="chip"
-                            placeholder="Filter by index"
-                            :showToggleAll="false"
-                            :loading="isFetchingIndexes"
-                            showClear
-                            filter
-                            fluid
-                        />
-                    </template>
-                </Column>
-                <Column
-                    field="enqueuedAt"
-                    header="Enqueued"
-                >
-                    <!-- TODO: DatePicker filtering -->
-                    <template #body="{ data }">
-                        {{ formatDate((data as Task).enqueuedAt as string) }}
-                    </template>
-                </Column>
-                <Column
-                    field="finishedAt"
-                    header="Finished"
-                >
-                    <template #body="{ data }">
-                        {{ formatDate((data as Task).finishedAt as string) }}
-                    </template>
-                </Column>
-                <Column
-                    header="Action"
-                    frozen
-                    alignFrozen="right"
-                >
-                    <template #body="{ data }">
+                    </div>
+                    <div>
                         <Button
-                            label="Details"
-                            outlined
-                            @click="showTask(data as Task)"
+                            severity="secondary"
+                            label="Refresh"
+                            :loading="isFetchingTasks"
+                            @click="refreshTasksList()"
                         >
                             <template #icon>
-                                <Info />
+                                <RefreshCw />
+                            </template>
+                            <template #loadingicon>
+                                <RefreshCw class="animate-spin" />
                             </template>
                         </Button>
-                    </template>
-                </Column>
-            </DataTable>
-        </template>
-    </Card>
+                    </div>
+                    <div>
+                        <InputGroup>
+                            <InputGroupAddon>
+                                Limit
+                            </InputGroupAddon>
+                            <Select
+                                v-model="tasksParams.limit"
+                                :options="[20, 50, 100, 500]"
+                            />
+                        </InputGroup>
+                    </div>
+                </div>
+            </template>
+        </PageTitleSection>
 
-    <div
-        v-if="hasMore"
-        class="mt-4 text-center text-sm text-surface-500"
-    >
-        Scroll to load more tasks
+        <Card>
+            <template #content>
+                <DataTable
+                    :value="tasks"
+                    :loading="isFetchingTasks"
+                    scrollable
+                    columnResizeMode="fit"
+                    filterDisplay="row"
+                >
+                    <template #empty>
+                        <NotFoundMessage subject="Task" />
+                    </template>
+                    <Column
+                        field="uid"
+                        header="UID"
+                    />
+                    <Column
+                        field="status"
+                        header="Status"
+                        :showFilterMenu="false"
+                    >
+                        <template #filter>
+                            <MultiSelect
+                                v-model="tasksParams.statuses"
+                                pt:label:class="flex flex-wrap"
+                                pt:overlay:class="z-1!"
+                                :options="[
+                                    'enqueued',
+                                    'processing',
+                                    'succeeded',
+                                    'failed',
+                                    'canceled',
+                                ]"
+                                display="chip"
+                                placeholder="Filter by status"
+                                :showToggleAll="false"
+                                showClear
+                                fluid
+                            >
+                                <template #option="{ option }">
+                                    <Tag
+                                        :value="option"
+                                        :severity="getStatusSeverity(option)"
+                                    />
+                                </template>
+                            </MultiSelect>
+                        </template>
+                        <template #body="{ data }">
+                            <Tag
+                                :value="data.status"
+                                :severity="getStatusSeverity(data.status)"
+                            />
+                        </template>
+                    </Column>
+                    <Column
+                        field="type"
+                        header="Type"
+                        :showFilterMenu="false"
+                        showClearButton
+                    >
+                        <template #filter>
+                            <MultiSelect
+                                v-model="tasksParams.types"
+                                pt:label:class="flex flex-wrap"
+                                pt:overlay:class="z-1!"
+                                :options="[
+                                    'documentAdditionOrUpdate',
+                                    'documentEdition',
+                                    'documentDeletion',
+                                    'settingsUpdate',
+                                    'indexCreation',
+                                    'indexDeletion',
+                                    'indexUpdate',
+                                    'indexSwap',
+                                    'taskCancelation',
+                                    'taskDeletion',
+                                    'dumpCreation',
+                                    'snapshotCreation',
+                                    'upgradeDatabase',
+                                ]"
+                                display="chip"
+                                placeholder="Filter by type"
+                                :showToggleAll="false"
+                                showClear
+                                filter
+                                fluid
+                            />
+                        </template>
+                    </Column>
+                    <Column
+                        field="indexUid"
+                        header="Index"
+                        :showFilterMenu="false"
+                    >
+                        <template #filter>
+                            <MultiSelect
+                                v-model="tasksParams.indexUids"
+                                pt:label:class="flex flex-wrap"
+                                pt:overlay:class="z-1!"
+                                :options="indexUids"
+                                display="chip"
+                                placeholder="Filter by index"
+                                :showToggleAll="false"
+                                :loading="isFetchingIndexes"
+                                showClear
+                                filter
+                                fluid
+                            />
+                        </template>
+                    </Column>
+                    <Column
+                        field="enqueuedAt"
+                        header="Enqueued"
+                    >
+                        <!-- TODO: DatePicker filtering -->
+                        <template #body="{ data }">
+                            {{ formatDate((data as Task).enqueuedAt as string) }}
+                        </template>
+                    </Column>
+                    <Column
+                        field="finishedAt"
+                        header="Finished"
+                    >
+                        <template #body="{ data }">
+                            {{ formatDate((data as Task).finishedAt as string) }}
+                        </template>
+                    </Column>
+                    <Column
+                        header="Action"
+                        frozen
+                        alignFrozen="right"
+                    >
+                        <template #body="{ data }">
+                            <Button
+                                label="Details"
+                                outlined
+                                @click="showTask(data as Task)"
+                            >
+                                <template #icon>
+                                    <Info />
+                                </template>
+                            </Button>
+                        </template>
+                    </Column>
+                </DataTable>
+            </template>
+        </Card>
+
+        <div
+            v-if="hasMore"
+            class="mt-4 text-center text-sm text-surface-500"
+        >
+            Scroll to load more tasks
+        </div>
     </div>
 </template>

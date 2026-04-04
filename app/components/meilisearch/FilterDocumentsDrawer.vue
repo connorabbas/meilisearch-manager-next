@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useFacetSearch } from '@/composables/meilisearch/useFacetSearch'
-import { FacetHit, Filter, FilterableAttributes } from 'meilisearch'
+import type { FacetHit, Filter, FilterableAttributes } from 'meilisearch'
 import { AlertTriangle } from '@lucide/vue'
 
 const props = defineProps<{
@@ -30,6 +30,16 @@ function handleHideDrawer() {
     emit('hide')
 }
 
+function updateFacetFilterValue(attributeName: string, value: string[]) {
+    const facetFilter = facetFilters.value[attributeName]
+
+    if (!facetFilter) {
+        return
+    }
+
+    facetFilter.value = value
+}
+
 watch(selectedAttributes, async (newVal, oldVal) => {
     const added = newVal.filter(item => !oldVal?.includes(item))
     const removed = oldVal?.filter(item => !newVal.includes(item)) || []
@@ -51,7 +61,10 @@ watch(selectedAttributes, async (newVal, oldVal) => {
     // remove facet filters when un-checked
     if (removed.length > 0) {
         removed.forEach((attributeName) => {
-            delete facetFilters.value[attributeName]
+            const nextFacetFilters = { ...facetFilters.value }
+
+            Reflect.deleteProperty(nextFacetFilters, attributeName)
+            facetFilters.value = nextFacetFilters
         })
     }
 })
@@ -134,7 +147,7 @@ watch(facetFilters, (newVal) => {
                     <label :for="`${facetFilter.attribute}_id`">{{ facetFilter.attribute }}</label>
                     <div class="relative">
                         <MultiSelect
-                            v-model="facetFilters[facetFilter.attribute].value"
+                            :modelValue="facetFilter.value"
                             :options="facetFilter.facetHits"
                             :inputId="`${facetFilter.attribute}_id`"
                             :showToggleAll="false"
@@ -149,6 +162,7 @@ watch(facetFilters, (newVal) => {
                             showClear
                             filter
                             fluid
+                            @update:modelValue="(value) => updateFacetFilterValue(facetFilter.attribute, value)"
                         >
                             <template #option="{ option }">
                                 {{ option.value }} ({{ option.count }})

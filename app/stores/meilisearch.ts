@@ -1,6 +1,6 @@
 import { Meilisearch } from 'meilisearch'
 import { useToast } from 'primevue/usetoast'
-import { useConfirm } from "primevue/useconfirm"
+import { useConfirm } from 'primevue/useconfirm'
 import { useStorage } from '@vueuse/core'
 
 export interface MeilisearchInstanceConfig {

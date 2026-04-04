@@ -22,7 +22,7 @@ definePageMeta({
 
 const route = useRoute()
 const indexUid = computed(() => String(route.params.uid ?? ''))
-const { currentIndex, isFetching: fetchingIndexData, error, fetchIndex } = useIndexes()
+const { currentIndex } = useIndexes()
 const { isSendingTask, confirmDeleteDocument } = useDocuments()
 const { indexStats, fetchIndexStats } = useStats()
 const {
@@ -183,42 +183,45 @@ onMounted(async () => {
 </script>
 
 <template>
-    <Teleport to="#index-page-actions">
-        <Button
-            label="Import Documents"
-            @click="showImportDocumentsDrawerOpen = true"
-        >
-            <template #icon>
-                <Plus />
-            </template>
-        </Button>
-    </Teleport>
+    <div class="flex flex-col gap-4 md:gap-8">
+        <Teleport to="#index-page-actions">
+            <Button
+                label="Import Documents"
+                @click="showImportDocumentsDrawerOpen = true"
+            >
+                <template #icon>
+                    <Plus />
+                </template>
+            </Button>
+        </Teleport>
 
-    <div class="space-y-4">
-        <div class="relative">
-            <ImportDocumentsDrawer
-                v-model="showImportDocumentsDrawerOpen"
-                :index-uid="indexUid"
-                :primary-key="currentIndex?.primaryKey"
-                @documents-imported="fetchData"
-            />
-            <EditDocumentDrawer
-                v-model="editDocumentDrawerOpen"
-                :index-uid="indexUid"
-                :primary-key="currentIndex?.primaryKey"
-                :document="currentDocument"
-                @document-updated="fetchData"
-                @hide="handleEditDrawerHidden"
-            />
-            <FilterDocumentsDrawer
-                v-model="showFilteringDrawerOpen"
-                v-model:filter="searchFilter"
-                :index-uid="indexUid"
-                :filterable-attributes="filterableAttributes"
-                :searching="isSearching"
-                :total-hits="searchResults?.estimatedTotalHits"
-            />
-        </div>
+        <Teleport to="body">
+            <div class="relative">
+                <ImportDocumentsDrawer
+                    v-model="showImportDocumentsDrawerOpen"
+                    :index-uid="indexUid"
+                    :primary-key="currentIndex?.primaryKey"
+                    @documents-imported="fetchData"
+                />
+                <EditDocumentDrawer
+                    v-model="editDocumentDrawerOpen"
+                    :index-uid="indexUid"
+                    :primary-key="currentIndex?.primaryKey"
+                    :document="currentDocument"
+                    @document-updated="fetchData"
+                    @hide="handleEditDrawerHidden"
+                />
+                <FilterDocumentsDrawer
+                    v-model="showFilteringDrawerOpen"
+                    v-model:filter="searchFilter"
+                    :index-uid="indexUid"
+                    :filterable-attributes="filterableAttributes"
+                    :searching="isSearching"
+                    :total-hits="searchResults?.estimatedTotalHits"
+                />
+            </div>
+        </Teleport>
+
         <Card>
             <template #content>
                 <div class="flex flex-col md:flex-row gap-4">

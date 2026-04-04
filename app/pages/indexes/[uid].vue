@@ -7,24 +7,26 @@ const indexUid = computed(() => String(route.params.uid ?? ''))
 </script>
 
 <template>
-    <PageTitleSection>
-        <template #title>
-            Index: {{ indexUid }}
-        </template>
-        <template #end>
-            <div
-                id="index-page-actions"
-                class="empty:hidden flex gap-4"
-            >
-                <!-- Child views will teleport action buttons here -->
-            </div>
-        </template>
-    </PageTitleSection>
+    <div class="flex flex-col gap-4 md:gap-8">
+        <PageTitleSection>
+            <template #title>
+                Index: {{ indexUid }}
+            </template>
+            <template #end>
+                <div
+                    id="index-page-actions"
+                    class="empty:hidden flex gap-4"
+                >
+                    <!-- Child views will teleport action buttons here -->
+                </div>
+            </template>
+        </PageTitleSection>
 
-    <IndexTabMenu
-        :index-uid="indexUid"
-        :current-path="route.path"
-    />
+        <IndexTabMenu
+            :index-uid="indexUid"
+            :current-path="route.path"
+        />
 
-    <NuxtPage />
+        <NuxtPage />
+    </div>
 </template>

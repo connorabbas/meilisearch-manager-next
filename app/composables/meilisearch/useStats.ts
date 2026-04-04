@@ -1,4 +1,4 @@
-import { type IndexStats, type Stats, type Version } from 'meilisearch'
+import type { IndexStats, Stats, Version } from 'meilisearch'
 import { useToast } from 'primevue/usetoast'
 import { useMeilisearchStore } from '@/stores/meilisearch'
 

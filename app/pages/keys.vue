@@ -96,162 +96,164 @@ const keyCopiedUid = computed(() => (copied.value && lastCopiedKeyUid.value) ? l
 </script>
 
 <template>
-    <Teleport to="body">
-        <KeyDetailsDrawer
-            v-if="currentKey"
-            v-model="keyDetailsDrawerOpen"
-            :api-key="currentKey"
-            :copied-key-uid="keyCopiedUid"
-            @hide="resetCurrentKey"
-            @copy-key="copyApiKey"
-        />
-        <CreateKeyDrawer
-            v-model="newKeyDrawerOpen"
-            @key-created="fetchAllKeys"
-        />
-        <EditKeyDrawer
-            v-model="editKeyDrawerOpen"
-            :api-key="currentKey"
-            @hide="resetCurrentKey"
-            @key-updated="fetchAllKeys"
-        />
-    </Teleport>
-
-    <PageTitleSection>
-        <template #title>
-            API Keys
-        </template>
-        <template #end>
-            <Button
-                label="New Key"
-                @click="newKeyDrawerOpen = true"
-            >
-                <template #icon>
-                    <Plus />
-                </template>
-            </Button>
-        </template>
-    </PageTitleSection>
-
-    <Card>
-        <template #content>
-            <Menu
-                ref="key-context-menu"
-                class="shadow-sm"
-                :model="keyContextMenuItems"
-                popup
+    <div class="flex flex-col gap-4 md:gap-8">
+        <Teleport to="body">
+            <KeyDetailsDrawer
+                v-if="currentKey"
+                v-model="keyDetailsDrawerOpen"
+                :api-key="currentKey"
+                :copied-key-uid="keyCopiedUid"
+                @hide="resetCurrentKey"
+                @copy-key="copyApiKey"
             />
-            <DataTable
-                :value="keys"
-                :loading="isFetchingKeys"
-                scrollable
-                columnResizeMode="fit"
-            >
-                <template #empty>
-                    <NotFoundMessage subject="Key" />
-                </template>
-                <Column
-                    field="name"
-                    header="Name"
+            <CreateKeyDrawer
+                v-model="newKeyDrawerOpen"
+                @key-created="fetchAllKeys"
+            />
+            <EditKeyDrawer
+                v-model="editKeyDrawerOpen"
+                :api-key="currentKey"
+                @hide="resetCurrentKey"
+                @key-updated="fetchAllKeys"
+            />
+        </Teleport>
+
+        <PageTitleSection>
+            <template #title>
+                API Keys
+            </template>
+            <template #end>
+                <Button
+                    label="New Key"
+                    @click="newKeyDrawerOpen = true"
                 >
-                    <template #body="{ data }">
-                        <span v-tooltip.top="(data as Key).description">{{ (data as Key).name }}</span>
+                    <template #icon>
+                        <Plus />
                     </template>
-                </Column>
-                <Column
-                    field="key"
-                    header="Key"
+                </Button>
+            </template>
+        </PageTitleSection>
+
+        <Card>
+            <template #content>
+                <Menu
+                    ref="key-context-menu"
+                    class="shadow-sm"
+                    :model="keyContextMenuItems"
+                    popup
+                />
+                <DataTable
+                    :value="keys"
+                    :loading="isFetchingKeys"
+                    scrollable
+                    columnResizeMode="fit"
                 >
-                    <template #body="{ data }: { data: Key }">
-                        <div class="flex items-center gap-2">
-                            <Inplace pt:display:class="p-0">
-                                <template #display>
-                                    <div
-                                        v-tooltip.left="'Reveal API Key'"
-                                        class="p-2"
-                                    >
-                                        {{ maskedApiKey(data.key) }}
-                                    </div>
-                                </template>
-                                <template #content>
-                                    <div class="whitespace-normal break-all max-w-[20rem]">
-                                        {{ data.key }}
-                                    </div>
-                                </template>
-                            </Inplace>
+                    <template #empty>
+                        <NotFoundMessage subject="Key" />
+                    </template>
+                    <Column
+                        field="name"
+                        header="Name"
+                    >
+                        <template #body="{ data }">
+                            <span v-tooltip.top="(data as Key).description">{{ (data as Key).name }}</span>
+                        </template>
+                    </Column>
+                    <Column
+                        field="key"
+                        header="Key"
+                    >
+                        <template #body="{ data }: { data: Key }">
+                            <div class="flex items-center gap-2">
+                                <Inplace pt:display:class="p-0">
+                                    <template #display>
+                                        <div
+                                            v-tooltip.left="'Reveal API Key'"
+                                            class="p-2"
+                                        >
+                                            {{ maskedApiKey(data.key) }}
+                                        </div>
+                                    </template>
+                                    <template #content>
+                                        <div class="whitespace-normal break-all max-w-[20rem]">
+                                            {{ data.key }}
+                                        </div>
+                                    </template>
+                                </Inplace>
+                                <Button
+                                    v-if="canCopy"
+                                    v-tooltip.right="'Copy'"
+                                    severity="secondary"
+                                    size="small"
+                                    text
+                                    @click="copyApiKey(data.key, data.uid)"
+                                >
+                                    <Check v-if="keyCopiedUid === data.uid" />
+                                    <Copy v-else />
+                                </Button>
+                            </div>
+                        </template>
+                    </Column>
+                    <Column
+                        field="indexes"
+                        header="Indexes"
+                    >
+                        <template #body="{ data }">
+                            <div class="flex flex-wrap gap-2">
+                                <Tag
+                                    v-for="index in (data as Key).indexes"
+                                    :key="index"
+                                    :value="index"
+                                    severity="secondary"
+                                />
+                            </div>
+                        </template>
+                    </Column>
+                    <Column
+                        field="actions"
+                        header="Actions"
+                    >
+                        <template #body="{ data }">
+                            <div class="flex flex-wrap gap-2">
+                                <Tag
+                                    v-for="action in (data as Key).actions"
+                                    :key="action"
+                                    :value="action"
+                                    severity="secondary"
+                                />
+                            </div>
+                        </template>
+                    </Column>
+                    <Column
+                        field="createdAt"
+                        header="Created"
+                    >
+                        <template #body="{ data }">
+                            {{ formatDate((data as Key).createdAt) }}
+                        </template>
+                    </Column>
+                    <Column
+                        header="Action"
+                        frozen
+                        alignFrozen="right"
+                    >
+                        <template #body="{ data }">
                             <Button
-                                v-if="canCopy"
-                                v-tooltip.right="'Copy'"
+                                v-tooltip.top="'Show Key Actions'"
+                                type="button"
                                 severity="secondary"
-                                size="small"
+                                rounded
                                 text
-                                @click="copyApiKey(data.key, data.uid)"
+                                @click="toggleKeyContextMenu($event, (data as Key))"
                             >
-                                <Check v-if="keyCopiedUid === data.uid" />
-                                <Copy v-else />
+                                <template #icon>
+                                    <EllipsisVertical class="size-5!" />
+                                </template>
                             </Button>
-                        </div>
-                    </template>
-                </Column>
-                <Column
-                    field="indexes"
-                    header="Indexes"
-                >
-                    <template #body="{ data }">
-                        <div class="flex flex-wrap gap-2">
-                            <Tag
-                                v-for="index in (data as Key).indexes"
-                                :key="index"
-                                :value="index"
-                                severity="secondary"
-                            />
-                        </div>
-                    </template>
-                </Column>
-                <Column
-                    field="actions"
-                    header="Actions"
-                >
-                    <template #body="{ data }">
-                        <div class="flex flex-wrap gap-2">
-                            <Tag
-                                v-for="action in (data as Key).actions"
-                                :key="action"
-                                :value="action"
-                                severity="secondary"
-                            />
-                        </div>
-                    </template>
-                </Column>
-                <Column
-                    field="createdAt"
-                    header="Created"
-                >
-                    <template #body="{ data }">
-                        {{ formatDate((data as Key).createdAt) }}
-                    </template>
-                </Column>
-                <Column
-                    header="Action"
-                    frozen
-                    alignFrozen="right"
-                >
-                    <template #body="{ data }">
-                        <Button
-                            v-tooltip.top="'Show Key Actions'"
-                            type="button"
-                            severity="secondary"
-                            rounded
-                            text
-                            @click="toggleKeyContextMenu($event, (data as Key))"
-                        >
-                            <template #icon>
-                                <EllipsisVertical class="size-5!" />
-                            </template>
-                        </Button>
-                    </template>
-                </Column>
-            </DataTable>
-        </template>
-    </Card>
+                        </template>
+                    </Column>
+                </DataTable>
+            </template>
+        </Card>
+    </div>
 </template>

@@ -1,4 +1,4 @@
-import { LayoutDashboard, FolderSearch, Plus, ArrowLeftRight, Trash2, ListCheck, KeyRound, BookText } from '@lucide/vue'
+import { LayoutDashboard, FolderSearch, Plus, ArrowLeftRight, Trash2, ListCheck, KeyRound } from '@lucide/vue'
 import type { MenuItem } from '@/types'
 import { useMeilisearchStore } from '@/stores/meilisearch'
 
@@ -6,7 +6,6 @@ export function useAppLayout() {
     const meilisearchStore = useMeilisearchStore()
     const route = useRoute()
 
-    const pageTitle = computed(() => route.meta.pageTitle as string) // TODO: handle page title with definePageMeta at layout
     const currentRoute = computed(() => route.name)
     const currentPath = computed(() => route.path)
 
@@ -79,7 +78,9 @@ export function useAppLayout() {
 
                         try {
                             await meilisearchStore.connect()
-                        } catch {}
+                        } catch (error) {
+                            console.error('Failed to connect instance', error)
+                        }
 
                         await navigateTo('/dashboard', { replace: true })
                     })

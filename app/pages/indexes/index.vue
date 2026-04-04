@@ -28,8 +28,7 @@ const {
 async function fetchData() {
     await Promise.all([
         fetchStats(),
-        fetchIndexesPaginated(),
-        new Promise<void>((resolve) => setTimeout(resolve, 1000)), // simulates slow API response
+        fetchIndexesPaginated()
     ])
 }
 await fetchData()

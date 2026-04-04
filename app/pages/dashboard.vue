@@ -17,8 +17,7 @@ const currentInstanceId = computed(() => meilisearchStore.currentInstance?.id ??
 async function fetchData() {
     await Promise.all([
         fetchStats(),
-        fetchVersion(),
-        new Promise<void>((resolve) => setTimeout(resolve, 1000)), // simulates slow API response
+        fetchVersion()
     ])
 }
 

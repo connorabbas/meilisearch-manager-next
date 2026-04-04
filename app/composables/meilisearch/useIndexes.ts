@@ -77,7 +77,6 @@ export function useIndexes(initialPerPage: number = 20) {
         }
 
         isFetching.value = true
-        await new Promise<void>((resolve) => setTimeout(resolve, 1000))
         error.value = null
 
         try {

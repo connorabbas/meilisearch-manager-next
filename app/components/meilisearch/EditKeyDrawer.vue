@@ -143,7 +143,7 @@ watch(() => props.apiKey, (newVal: Key | null) => {
                     <a
                         href="https://www.meilisearch.com/docs/reference/api/keys/update-api-key#response-actions"
                         target="_blank"
-                        class="text-inherit"
+                        class="text-inherit underline"
                     >
                         <CircleQuestionMark />
                     </a>

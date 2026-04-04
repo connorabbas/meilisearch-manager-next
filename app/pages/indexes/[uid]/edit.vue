@@ -11,11 +11,7 @@ definePageMeta({
 
 const route = useRoute()
 const indexUid = computed(() => String(route.params.uid ?? ''))
-const { currentIndex, isFetching, error, fetchIndex } = useIndexes()
-
-function refetchIndex() {
-    void fetchIndex(indexUid.value)
-}
+const { currentIndex, error, fetchIndex } = useIndexes()
 
 await fetchIndex(indexUid.value)
 </script>
@@ -41,7 +37,7 @@ await fetchIndex(indexUid.value)
                 <UpdateIndexPrimaryKeyForm
                     :indexUid="indexUid"
                     :index="(currentIndex as Index)"
-                    @refetch-index="refetchIndex"
+                    @refetch-index="fetchIndex(indexUid)"
                 />
             </template>
         </Card>

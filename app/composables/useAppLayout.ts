@@ -1,4 +1,4 @@
-import { LayoutDashboard, FolderSearch, Plus, ArrowLeftRight, Trash2 } from '@lucide/vue'
+import { LayoutDashboard, FolderSearch, Plus, ArrowLeftRight, Trash2, ListCheck, KeyRound, BookText } from '@lucide/vue'
 import type { MenuItem } from '@/types'
 import { useMeilisearchStore } from '@/stores/meilisearch'
 
@@ -6,6 +6,7 @@ export function useAppLayout() {
     const meilisearchStore = useMeilisearchStore()
     const route = useRoute()
 
+    const pageTitle = computed(() => route.meta.pageTitle as string) // TODO: handle page title with definePageMeta at layout
     const currentRoute = computed(() => route.name)
     const currentPath = computed(() => route.path)
 
@@ -30,23 +31,23 @@ export function useAppLayout() {
             route: '/indexes',
             active: isActiveRoute('indexes') || currentPath.value.startsWith('/indexes'),
         },
-        /* {
+        {
             label: 'Tasks',
             lucideIcon: ListCheck,
-            route: { name: 'tasks' },
+            route: '/tasks',
             active: isActiveRoute('tasks') || currentPath.value.startsWith('/tasks'),
         },
         {
             label: 'Keys',
             lucideIcon: KeyRound,
-            route: { name: 'keys' },
+            route: '/keys',
             active: isActiveRoute('keys'),
-        }, */
-        /* {
+        },
+        {
             label: 'Meilisearch Docs',
             lucideIcon: BookText,
             link: 'https://www.meilisearch.com/docs/home',
-        }, */
+        },
     ])
 
     // Meilisearch instance

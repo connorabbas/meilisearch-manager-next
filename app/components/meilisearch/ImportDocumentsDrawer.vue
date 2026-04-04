@@ -4,7 +4,7 @@ import { AlertCircle, Braces, Info, Plus, TriangleAlert, Upload } from '@lucide/
 import { Mode } from 'vanilla-jsoneditor'
 import ThemedJsonEditor from '../ThemedJsonEditor.vue'
 import { useDocuments } from '@/composables/meilisearch/useDocuments'
-import FileUpload, { FileUploadSelectEvent } from 'primevue/fileupload'
+import FileUpload, { type FileUploadSelectEvent } from 'primevue/fileupload'
 import { readFileAsText } from '@/utils'
 
 const props = defineProps<{
@@ -131,12 +131,12 @@ watch(uploadContentType, (newVal) => {
                     <Info />
                 </template>
                 <span class="font-bold">Note:</span> reference the Meilisearch docs for the difference between <a
-                    class="text-inherit"
+                    class="text-inherit underline"
                     href="https://www.meilisearch.com/docs/reference/api/documents/add-or-replace-documents"
                     target="_blank"
                 >
                     add or replace</a> vs. <a
-                    class="text-inherit"
+                    class="text-inherit underline"
                     href="https://www.meilisearch.com/docs/reference/api/documents/add-or-update-documents"
                     target="_blank"
                 >

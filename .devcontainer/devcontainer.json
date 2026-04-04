@@ -1,6 +1,6 @@
 // https://aka.ms/devcontainer.json
 {
-    "name": "Nuxt Starter",
+    "name": "Meilisearch Manager Pro",
     "dockerComposeFile": [
         "../docker-compose.dev.yml"
     ],

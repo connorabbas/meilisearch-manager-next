@@ -1,7 +1,8 @@
 <script setup lang="ts">
-
 </script>
 
 <template>
-    <SelectColorModeButton />
+    <div>
+        <slot />
+    </div>
 </template>

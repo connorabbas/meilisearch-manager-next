@@ -4,10 +4,17 @@ import globalPt from './app/theme/global-pt'
 
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
+    app: {
+        head: {
+            bodyAttrs: {
+                class: 'antialiased font-sans h-full bg-surface-100 dark:bg-surface-950'
+            }
+        }
+    },
     compatibilityDate: '2025-07-15',
     css: ['~/assets/css/main.css'],
     devtools: { enabled: true },
-    modules: ['@primevue/nuxt-module', '@nuxt/fonts'],
+    modules: ['@primevue/nuxt-module', '@nuxt/fonts', '@pinia/nuxt'],
     primevue: {
         options: {
             theme: {
@@ -23,6 +30,7 @@ export default defineNuxtConfig({
             pt: globalPt,
         }
     },
+    ssr: false,
     vite: {
         plugins: [
             tailwindcss(),

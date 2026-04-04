@@ -6,7 +6,7 @@ import { useMeilisearchStore } from '@/stores/meilisearch'
 
 definePageMeta({
     layout: 'app',
-    pageTitle: 'dashboard',
+    title: 'Dashboard',
     breadcrumbs: [{ label: 'Dashboard' }]
 })
 
@@ -18,20 +18,24 @@ async function fetchData() {
     await Promise.all([
         fetchStats(),
         fetchVersion(),
+        new Promise<void>((resolve) => setTimeout(resolve, 1000)), // simulates slow API response
     ])
 }
 
+const initialInstanceId = currentInstanceId.value
+if (initialInstanceId) {
+    await meilisearchStore.connect(initialInstanceId)
+    await fetchData()
+}
+
 watch(currentInstanceId, async (instanceId, previousInstanceId) => {
-    if (!instanceId) {
+    if (!instanceId || instanceId === previousInstanceId) {
         return
     }
 
-    if (instanceId !== previousInstanceId) {
-        await meilisearchStore.connect(instanceId)
-    }
-
+    await meilisearchStore.connect(instanceId)
     await fetchData()
-}, { immediate: true })
+})
 </script>
 
 <template>

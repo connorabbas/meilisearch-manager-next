@@ -2,7 +2,7 @@
 import { useAppLayout } from '@/composables/useAppLayout'
 import SelectColorModePopoverButton from '@/components/SelectColorModePopoverButton.vue'
 import ChangeInstanceModal from '@/components/meilisearch/ChangeInstanceModal.vue'
-import { ChevronsUpDown, Menu as MenuIcon } from '@lucide/vue'
+import { ChevronsUpDown, Home, Menu as MenuIcon } from '@lucide/vue'
 import Container from '@/components/Container.vue'
 import PopupMenuButton from '@/components/PopupMenuButton.vue'
 import LogoLink from '@/components/LogoLink.vue'
@@ -13,8 +13,30 @@ import type { MenuItem } from '@/types'
 
 const route = useRoute()
 
-const pageTitle = computed(() => route.meta.pageTitle as string)
-const breadcrumbs = computed(() => route.meta.breadcrumbs as MenuItem[])
+const staticBreadcrumbs = computed(() => route.meta.breadcrumbs as MenuItem[] | undefined)
+const breadcrumbs = computed<MenuItem[]>(() => {
+    const uidParam = route.params.uid
+
+    if (typeof uidParam === 'string' && route.path.startsWith('/indexes/')) {
+        const dynamicBreadcrumbs: MenuItem[] = [
+            { route: '/dashboard', lucideIcon: Home },
+            { route: '/indexes', label: 'Indexes' },
+            { route: `/indexes/${uidParam}`, label: uidParam },
+        ]
+
+        if (route.path.endsWith('/documents')) {
+            dynamicBreadcrumbs.push({ label: 'Documents' })
+        } else if (route.path.endsWith('/settings')) {
+            dynamicBreadcrumbs.push({ label: 'Settings' })
+        } else if (route.path.endsWith('/edit')) {
+            dynamicBreadcrumbs.push({ label: 'Edit' })
+        }
+
+        return dynamicBreadcrumbs
+    }
+
+    return staticBreadcrumbs.value ?? []
+})
 
 const {
     currentRoute,

@@ -2,6 +2,13 @@
 import { AlertCircle } from '@lucide/vue'
 import { useColorMode } from '@vueuse/core'
 
+const route = useRoute()
+
+useHead(() => ({
+    title: route.meta.title as string | undefined,
+    titleTemplate: (titleChunk) => titleChunk ? `${titleChunk} - Meilisearch Manager Pro` : 'Meilisearch Manager Pro',
+}))
+
 const colorMode = useColorMode({ emitAuto: true })
 provide('colorMode', colorMode)
 </script>

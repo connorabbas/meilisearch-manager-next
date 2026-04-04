@@ -1,17 +1,18 @@
 <script setup lang="ts">
 import { useStats } from '@/composables/meilisearch/useStats'
-import { Home, Plus, RefreshCw } from '@lucide/vue'
+import { ArrowRight, Home, Plus, RefreshCw } from '@lucide/vue'
 import PageTitleSection from '@/components/PageTitleSection.vue'
 import { useIndexes } from '@/composables/meilisearch/useIndexes'
 import CreateIndexDrawer from '@/components/meilisearch/CreateIndexDrawer.vue'
 import NotFoundMessage from '@/components/NotFoundMessage.vue'
+import type { Index } from 'meilisearch'
 //import { formatDate } from '@/utils';
 //import { Index } from 'meilisearch';
 
 definePageMeta({
     layout: 'app',
-    pageTitle: 'Indexes',
-    breadcrumbs: [{ route: { name: 'dashboard' }, lucideIcon: Home }, { label: 'Indexes' }]
+    title: 'Indexes',
+    breadcrumbs: [{ route: '/dashboard', lucideIcon: Home }, { label: 'Indexes' }]
 })
 
 const { instanceStats, isFetching: isFetchingStats, fetchStats } = useStats()
@@ -29,7 +30,7 @@ async function fetchData() {
     await Promise.all([
         fetchStats(),
         fetchIndexesPaginated(),
-        new Promise<void>((resolve) => setTimeout(resolve, 2000)), // simulates slow API response
+        new Promise<void>((resolve) => setTimeout(resolve, 1000)), // simulates slow API response
     ])
 }
 await fetchData()
@@ -140,43 +141,43 @@ const indexesData = computed(() => {
                         header="Documents"
                     />
                     <!-- <Column
-                            field="createdAt"
-                            header="Created"
-                        >
-                            <template #body="{ data }">
-                                {{ data }}
-                                {{ formatDate((data as Index).createdAt as Date) }}
-                            </template>
-                        </Column>
-                        <Column
-                            field="updatedAt"
-                            header="Created"
-                        >
-                            <template #body="{ data }">
-                                {{ formatDate((data as Index).updatedAt as Date) }}
-                            </template>
-                        </Column> -->
-                    <!-- <Column
-                            header="Action"
-                            frozen
-                            alignFrozen="right"
-                        >
-                            <template #body="{ data }">
-                                <Button
-                                    v-slot="slotProps"
-                                    asChild
-                                    outlined
+                        field="createdAt"
+                        header="Created"
+                    >
+                        <template #body="{ data }">
+                            {{ data }}
+                            {{ formatDate((data as Index).createdAt as Date) }}
+                        </template>
+                    </Column>
+                    <Column
+                        field="updatedAt"
+                        header="Updated"
+                    >
+                        <template #body="{ data }">
+                            {{ formatDate((data as Index).updatedAt as Date) }}
+                        </template>
+                    </Column> -->
+                    <Column
+                        header="Action"
+                        frozen
+                        alignFrozen="right"
+                    >
+                        <template #body="{ data }">
+                            <Button
+                                v-slot="slotProps"
+                                asChild
+                                outlined
+                            >
+                                <NuxtLink
+                                    :to="`/indexes/${data.uid}`"
+                                    :class="[slotProps.class, 'no-underline']"
                                 >
-                                    <NuxtLink
-                                        :to=""
-                                        :class="[slotProps.class, 'no-underline']"
-                                    >
-                                        View
-                                        <ArrowRight />
-                                    </NuxtLink>
-                                </Button>
-                            </template>
-                        </Column> -->
+                                    View
+                                    <ArrowRight />
+                                </NuxtLink>
+                            </Button>
+                        </template>
+                    </Column>
                 </DataTable>
             </template>
         </Card>

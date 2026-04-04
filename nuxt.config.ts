@@ -1,4 +1,4 @@
-import tailwindcss from "@tailwindcss/vite"
+import tailwindcss from '@tailwindcss/vite'
 import themePreset from './app/theme/theme-preset'
 import globalPt from './app/theme/global-pt'
 
@@ -14,12 +14,12 @@ export default defineNuxtConfig({
     compatibilityDate: '2025-07-15',
     css: ['~/assets/css/main.css'],
     devtools: { enabled: false },
-    modules: ['@primevue/nuxt-module', '@nuxt/fonts', '@pinia/nuxt'],
+    modules: ['@primevue/nuxt-module', '@nuxt/fonts', '@pinia/nuxt', '@nuxt/eslint'],
     runtimeConfig: {
         public: {
             meilisearchHost: '',
-            meilisearchApiKey: '',
-        },
+            meilisearchApiKey: ''
+        }
     },
     primevue: {
         options: {
@@ -29,17 +29,17 @@ export default defineNuxtConfig({
                     darkModeSelector: '.dark',
                     cssLayer: {
                         name: 'primevue',
-                        order: 'theme, base, primevue',
-                    },
-                },
+                        order: 'theme, base, primevue'
+                    }
+                }
             },
-            pt: globalPt,
+            pt: globalPt
         }
     },
     ssr: false,
     vite: {
         plugins: [
-            tailwindcss(),
-        ],
-    },
+            tailwindcss()
+        ]
+    }
 })

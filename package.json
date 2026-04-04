@@ -6,11 +6,14 @@
         "build": "nuxt build",
         "dev": "nuxt dev",
         "generate": "nuxt generate",
+        "lint": "eslint . --fix",
         "preview": "nuxt preview",
-        "postinstall": "nuxt prepare"
+        "postinstall": "nuxt prepare",
+        "typecheck": "nuxt typecheck"
     },
     "dependencies": {
         "@lucide/vue": "^1.7.0",
+        "@nuxt/eslint": "^1.15.2",
         "@nuxt/fonts": "^0.14.0",
         "@pinia/nuxt": "^0.11.3",
         "@primeuix/themes": "^2.0.3",
@@ -30,6 +33,8 @@
     },
     "devDependencies": {
         "@primevue/nuxt-module": "^4.5.4",
-        "@tailwindcss/vite": "^4.2.2"
+        "@tailwindcss/vite": "^4.2.2",
+        "@vue/language-core": "^3.2.6",
+        "vue-tsc": "^3.2.6"
     }
 }

@@ -68,7 +68,6 @@ watch(() => props.apiKey, (newVal: Key | null) => {
         header="Edit API Key"
         class="w-full sm:w-[40rem]"
         position="right"
-        blockScroll
         @show="fetchAllIndexes"
         @hide="$emit('hide')"
     >

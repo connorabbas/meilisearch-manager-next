@@ -42,7 +42,6 @@ watch(primaryKey, (newVal) => {
         header="New Index"
         class="w-full sm:w-[40rem]"
         position="right"
-        blockScroll
         @hide="handleHideDrawer"
     >
         <form

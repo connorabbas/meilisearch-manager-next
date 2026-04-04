@@ -49,7 +49,6 @@ watch(() => props.document, (newVal: RecordAny | null) => {
         header="Edit Document"
         class="w-full sm:w-[60rem]"
         position="right"
-        blockScroll
         @hide="$emit('hide')"
     >
         <div class="flex flex-col gap-4 mt-1">

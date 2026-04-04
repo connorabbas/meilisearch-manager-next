@@ -111,7 +111,6 @@ watch(uploadContentType, (newVal) => {
         header="Import Documents"
         class="w-full sm:w-[60rem]"
         position="right"
-        blockScroll
         @hide="handleHidden"
     >
         <div class="flex flex-col gap-6">

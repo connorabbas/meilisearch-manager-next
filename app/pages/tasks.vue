@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useInfiniteScroll, useIntervalFn } from '@vueuse/core'
 import { useTasks } from '@/composables/meilisearch/useTasks'
 import { useIndexes } from '@/composables/meilisearch/useIndexes'
 import { Home, Info, RefreshCw } from '@lucide/vue'
@@ -12,14 +13,64 @@ definePageMeta({
     breadcrumbs: [{ route: { name: 'dashboard' }, lucideIcon: Home }, { label: 'Tasks' }]
 })
 
-const { tasks, isFetching: isFetchingTasks, hasMore, fetchTasks, fetchAndAppendTasks } = useTasks()
+const { tasks, isFetching: isFetchingTasks, hasMore, fetchTasks, fetchAndAppendTasks, pollLatestTasks, tasksPollingEnabled } = useTasks()
 const { indexes, isFetching: isFetchingIndexes, fetchAllIndexes } = useIndexes()
 
 const tasksParams = reactive<TasksOrBatchesQuery>({
     limit: 50,
 })
 
-await fetchTasks(tasksParams)
+const currentTasksQuery = computed<TasksOrBatchesQuery>(() => {
+    const query: TasksOrBatchesQuery = {
+        limit: tasksParams.limit,
+    }
+
+    if (tasksParams.statuses?.length) {
+        query.statuses = tasksParams.statuses
+    }
+    if (tasksParams.types?.length) {
+        query.types = tasksParams.types
+    }
+    if (tasksParams.indexUids?.length) {
+        query.indexUids = tasksParams.indexUids
+    }
+
+    return query
+})
+
+const scrollTarget = shallowRef<Window | null>(null)
+const { reset: resetInfiniteScroll } = useInfiniteScroll(
+    scrollTarget,
+    async () => {
+        await fetchAndAppendTasks(currentTasksQuery.value)
+    },
+    {
+        distance: 200,
+        canLoadMore: () => hasMore.value && !isFetchingTasks.value,
+    }
+)
+
+const { pause: pauseTaskPolling, resume: resumeTaskPolling } = useIntervalFn(
+    async () => {
+        await pollLatestTasks(currentTasksQuery.value)
+    },
+    5000,
+    {
+        immediate: false,
+        immediateCallback: false,
+    }
+)
+
+async function refreshTasksList(resetScrollState = true) {
+    await fetchTasks(currentTasksQuery.value)
+
+    if (resetScrollState) {
+        await nextTick()
+        resetInfiniteScroll()
+    }
+}
+
+await refreshTasksList(false)
 
 const indexUids = computed(() => indexes.value.map((index) => index.uid))
 
@@ -31,21 +82,23 @@ function showTask(task: Task) {
     showTaskDrawerOpen.value = true
 }
 
-watch(tasksParams, (newValue) => {
-    // Unset array typed properties if they have no values, to prevent bad query results
-    if (newValue?.statuses?.length === 0) {
-        delete tasksParams.statuses
-    }
-    if (newValue?.indexUids?.length === 0) {
-        delete tasksParams.indexUids
-    }
-    if (newValue?.types?.length === 0) {
-        delete tasksParams.types
-    }
-    fetchTasks(tasksParams)
+watch(currentTasksQuery, async () => {
+    await refreshTasksList()
 }, { deep: true })
 
+watch(tasksPollingEnabled, async (enabled) => {
+    pauseTaskPolling()
+
+    if (!enabled) {
+        return
+    }
+
+    await pollLatestTasks(currentTasksQuery.value)
+    resumeTaskPolling()
+}, { immediate: true })
+
 onMounted(() => {
+    scrollTarget.value = window
     fetchAllIndexes() // for filtering options
 })
 </script>
@@ -77,13 +130,34 @@ onMounted(() => {
             Tasks
         </template>
         <template #end>
-            <div class="flex gap-4">
+            <div class="flex flex-wrap items-center gap-4">
+                <div
+                    v-tooltip.top="'Poll tasks every 5 seconds'"
+                    class="flex items-center gap-3"
+                >
+                    <div
+                        v-if="tasksPollingEnabled"
+                        class="relative flex h-3 w-3 group"
+                    >
+                        <span
+                            class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"
+                        ></span>
+                        <span
+                            class="relative inline-flex rounded-full h-3 w-3 bg-green-400"
+                        ></span>
+                    </div>
+                    <label for="tasks-polling-toggle">Poll</label>
+                    <ToggleSwitch
+                        v-model="tasksPollingEnabled"
+                        inputId="tasks-polling-toggle"
+                    />
+                </div>
                 <div>
                     <Button
                         severity="secondary"
                         label="Refresh"
                         :loading="isFetchingTasks"
-                        @click="fetchTasks()"
+                        @click="refreshTasksList()"
                     >
                         <template #icon>
                             <RefreshCw />
@@ -256,13 +330,10 @@ onMounted(() => {
         </template>
     </Card>
 
-    <!-- TODO: https://vueuse.org/core/useInfiniteScroll/#useinfinitescroll instead of button -->
-    <div class="flex justify-center mt-4">
-        <Button
-            v-if="hasMore"
-            :loading="isFetchingTasks"
-            label="Load More"
-            @click="fetchAndAppendTasks(tasksParams)"
-        />
+    <div
+        v-if="hasMore"
+        class="mt-4 text-center text-sm text-surface-500"
+    >
+        Scroll to load more tasks
     </div>
 </template>

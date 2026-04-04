@@ -34,7 +34,6 @@ const keyExpired = computed(() => {
         :header="keyName"
         class="w-full sm:w-[40rem]"
         position="right"
-        blockScroll
         @hide="$emit('hide')"
     >
         <div class="space-y-4">

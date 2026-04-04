@@ -87,7 +87,6 @@ watch(allActions, (newVal) => {
         header="New API Key"
         class="w-full sm:w-[40rem]"
         position="right"
-        blockScroll
         @show="fetchAllIndexes"
         @hide="handleHideDrawer"
     >

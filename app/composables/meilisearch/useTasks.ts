@@ -1,52 +1,195 @@
+import { useStorage } from '@vueuse/core'
 import { useToast } from 'primevue/usetoast'
 import { useMeilisearchStore } from '@/stores/meilisearch'
 import type { Task, TasksOrBatchesQuery, TasksResults } from 'meilisearch'
 
+let tasksPollingEnabledState: ReturnType<typeof useStorage<boolean>> | null = null
+
+function normalizeTasksQuery(params?: TasksOrBatchesQuery): TasksOrBatchesQuery {
+    const normalized: TasksOrBatchesQuery = {
+        ...params,
+    }
+
+    delete normalized.from
+
+    if (normalized.statuses?.length === 0) {
+        delete normalized.statuses
+    }
+    if (normalized.indexUids?.length === 0) {
+        delete normalized.indexUids
+    }
+    if (normalized.types?.length === 0) {
+        delete normalized.types
+    }
+    if (normalized.reverse == null) {
+        delete normalized.reverse
+    }
+
+    return normalized
+}
+
+function getTasksQueryKey(params?: TasksOrBatchesQuery): string {
+    return JSON.stringify(normalizeTasksQuery(params))
+}
+
+function appendFetchedTasks(existingTasks: Task[], incomingTasks: Task[]): Task[] {
+    const incomingTasksByUid = new Map(incomingTasks.map(task => [task.uid, task]))
+    const existingUids = new Set(existingTasks.map(task => task.uid))
+
+    return [
+        ...existingTasks.map(task => incomingTasksByUid.get(task.uid) ?? task),
+        ...incomingTasks.filter(task => !existingUids.has(task.uid)),
+    ]
+}
+
+function prependPolledTasks(existingTasks: Task[], incomingTasks: Task[]): Task[] {
+    const incomingUids = new Set(incomingTasks.map(task => task.uid))
+
+    return [
+        ...incomingTasks,
+        ...existingTasks.filter(task => !incomingUids.has(task.uid)),
+    ]
+}
+
 export function useTasks() {
     const toast = useToast()
     const meilisearchStore = useMeilisearchStore()
+    const tasksPollingEnabled = tasksPollingEnabledState ?? useStorage<boolean>('meilisearch-tasks-polling-enabled', false)
+
+    tasksPollingEnabledState = tasksPollingEnabled
 
     const tasksResults = ref<TasksResults | null>(null)
     const tasks = ref<Task[]>([])
     const isFetching = ref(false)
+    const isPollingLatest = ref(false)
     const checkingTaskStatus = ref(false)
     const error = ref<string | null>(null)
     const hasMore = ref(false)
+    const currentQuery = ref<TasksOrBatchesQuery>({})
+    const nextCursor = ref<TasksResults['next']>(null)
+    let listRequestVersion = 0
 
-    async function fetchTasks(params?: TasksOrBatchesQuery, append = false): Promise<TasksResults | undefined> {
+    async function fetchTasks(params?: TasksOrBatchesQuery): Promise<TasksResults | undefined> {
         const client = meilisearchStore.getClient()
         if (!client) {
             error.value = 'Meilisearch client not connected'
             return
         }
 
+        const query = normalizeTasksQuery(params ?? currentQuery.value)
+        const queryKey = getTasksQueryKey(query)
+        const requestVersion = ++listRequestVersion
+        currentQuery.value = query
+
         isFetching.value = true
         error.value = null
 
         try {
-            const results = await client.tasks.getTasks(params)
-            tasksResults.value = results
+            const results = await client.tasks.getTasks(query)
 
-            if (append) {
-                tasks.value = [...tasks.value, ...results.results]
-            } else {
-                tasks.value = results.results
+            if (requestVersion !== listRequestVersion || getTasksQueryKey(currentQuery.value) !== queryKey) {
+                return results
             }
 
-            hasMore.value = !!results.next
+            tasksResults.value = results
+
+            tasks.value = results.results
+            nextCursor.value = results.next
+            hasMore.value = results.next !== null
             return results
         } catch (err) {
-            if (!append) tasks.value = []
-            error.value = (err as Error).message
+            if (requestVersion === listRequestVersion) {
+                tasksResults.value = null
+                tasks.value = []
+                nextCursor.value = null
+                hasMore.value = false
+                error.value = (err as Error).message
+            }
         } finally {
-            isFetching.value = false
+            if (requestVersion === listRequestVersion) {
+                isFetching.value = false
+            }
         }
     }
 
-    async function fetchAndAppendTasks(params: TasksOrBatchesQuery) {
-        if (!tasksResults.value?.next) return
-        params.from = tasksResults.value.next
-        await fetchTasks(params, true)
+    async function fetchAndAppendTasks(params?: TasksOrBatchesQuery): Promise<TasksResults | undefined> {
+        const client = meilisearchStore.getClient()
+        if (!client) {
+            error.value = 'Meilisearch client not connected'
+            return
+        }
+
+        if (isFetching.value || nextCursor.value === null) {
+            return
+        }
+
+        const query = normalizeTasksQuery(params ?? currentQuery.value)
+        const queryKey = getTasksQueryKey(query)
+        const requestVersion = ++listRequestVersion
+        currentQuery.value = query
+
+        isFetching.value = true
+        error.value = null
+
+        try {
+            const results = await client.tasks.getTasks({
+                ...query,
+                from: nextCursor.value,
+            })
+
+            if (requestVersion !== listRequestVersion || getTasksQueryKey(currentQuery.value) !== queryKey) {
+                return results
+            }
+
+            tasksResults.value = results
+            tasks.value = appendFetchedTasks(tasks.value, results.results)
+            nextCursor.value = results.next
+            hasMore.value = results.next !== null
+
+            return results
+        } catch (err) {
+            if (requestVersion === listRequestVersion) {
+                error.value = (err as Error).message
+            }
+        } finally {
+            if (requestVersion === listRequestVersion) {
+                isFetching.value = false
+            }
+        }
+    }
+
+    async function pollLatestTasks(params?: TasksOrBatchesQuery): Promise<TasksResults | undefined> {
+        const client = meilisearchStore.getClient()
+        if (!client) {
+            return
+        }
+
+        if (isFetching.value || isPollingLatest.value) {
+            return
+        }
+
+        const query = normalizeTasksQuery(params ?? currentQuery.value)
+        const queryKey = getTasksQueryKey(query)
+        const requestVersion = listRequestVersion
+
+        isFetching.value = true
+        isPollingLatest.value = true
+
+        try {
+            const results = await client.tasks.getTasks(query)
+
+            if (requestVersion !== listRequestVersion || getTasksQueryKey(currentQuery.value) !== queryKey) {
+                return results
+            }
+
+            tasks.value = prependPolledTasks(tasks.value, results.results)
+            return results
+        } catch (err) {
+            console.error('Failed to poll tasks', err)
+        } finally {
+            isFetching.value = false
+            isPollingLatest.value = false
+        }
     }
 
     async function pollTaskStatus(
@@ -128,10 +271,13 @@ export function useTasks() {
         tasksResults,
         tasks,
         isFetching,
+        isPollingLatest,
+        tasksPollingEnabled,
         hasMore,
         checkingTaskStatus,
         fetchTasks,
         fetchAndAppendTasks,
+        pollLatestTasks,
         pollTaskStatus,
     }
 }

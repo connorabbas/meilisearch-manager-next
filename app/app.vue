@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { AlertCircle } from '@lucide/vue'
 import { useColorMode } from '@vueuse/core'
+import 'vue3-json-viewer/dist/vue3-json-viewer.css'
+import 'vanilla-jsoneditor/themes/jse-theme-dark.css'
 
 const route = useRoute()
 

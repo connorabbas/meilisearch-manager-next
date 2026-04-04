@@ -43,11 +43,11 @@ export function useAppLayout() {
             route: '/keys',
             active: isActiveRoute('keys'),
         },
-        {
+        /* {
             label: 'Meilisearch Docs',
             lucideIcon: BookText,
             link: 'https://www.meilisearch.com/docs/home',
-        },
+        }, */
     ])
 
     // Meilisearch instance

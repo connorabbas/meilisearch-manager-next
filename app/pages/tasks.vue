@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useInfiniteScroll, useIntervalFn } from '@vueuse/core'
+import { useInfiniteScroll, useIntervalFn, useStorage } from '@vueuse/core'
 import { useTasks } from '@/composables/meilisearch/useTasks'
 import { useIndexes } from '@/composables/meilisearch/useIndexes'
 import { Home, Info, RefreshCw } from '@lucide/vue'
@@ -13,8 +13,11 @@ definePageMeta({
     breadcrumbs: [{ route: { name: 'dashboard' }, lucideIcon: Home }, { label: 'Tasks' }]
 })
 
-const { tasks, isFetching: isFetchingTasks, hasMore, fetchTasks, fetchAndAppendTasks, pollLatestTasks, tasksPollingEnabled } = useTasks()
+const { tasks, isFetching: isFetchingTasks, isPollingLatest, hasMore, fetchTasks, fetchAndAppendTasks, pollLatestTasks } = useTasks()
 const { indexes, isFetching: isFetchingIndexes, fetchAllIndexes } = useIndexes()
+const tasksPollingEnabled = useStorage<boolean>('meilisearch-tasks-polling-enabled', false)
+
+const tableLoading = computed(() => isPollingLatest.value || isFetchingTasks.value)
 
 const tasksParams = reactive<TasksOrBatchesQuery>({
     limit: 50,
@@ -84,7 +87,7 @@ function showTask(task: Task) {
 
 watch(currentTasksQuery, async () => {
     await refreshTasksList()
-}, { deep: true })
+})
 
 watch(tasksPollingEnabled, async (enabled) => {
     pauseTaskPolling()
@@ -143,9 +146,7 @@ onMounted(() => {
                             <span
                                 class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"
                             />
-                            <span
-                                class="relative inline-flex rounded-full h-3 w-3 bg-green-400"
-                            />
+                            <span class="relative inline-flex rounded-full h-3 w-3 bg-green-400" />
                         </div>
                         <label for="tasks-polling-toggle">Poll</label>
                         <ToggleSwitch
@@ -187,7 +188,7 @@ onMounted(() => {
             <template #content>
                 <DataTable
                     :value="tasks"
-                    :loading="isFetchingTasks"
+                    :loading="tableLoading"
                     scrollable
                     columnResizeMode="fit"
                     filterDisplay="row"

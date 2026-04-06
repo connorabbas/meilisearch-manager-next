@@ -1,9 +1,6 @@
-import { useStorage } from '@vueuse/core'
 import { useToast } from 'primevue/usetoast'
 import { useMeilisearchStore } from '@/stores/meilisearch'
 import type { Task, TasksOrBatchesQuery, TasksResults } from 'meilisearch'
-
-let tasksPollingEnabledState: ReturnType<typeof useStorage<boolean>> | null = null
 
 function normalizeTasksQuery(params?: TasksOrBatchesQuery): TasksOrBatchesQuery {
     const normalized: TasksOrBatchesQuery = {
@@ -42,21 +39,9 @@ function appendFetchedTasks(existingTasks: Task[], incomingTasks: Task[]): Task[
     ]
 }
 
-function prependPolledTasks(existingTasks: Task[], incomingTasks: Task[]): Task[] {
-    const incomingUids = new Set(incomingTasks.map(task => task.uid))
-
-    return [
-        ...incomingTasks,
-        ...existingTasks.filter(task => !incomingUids.has(task.uid)),
-    ]
-}
-
 export function useTasks() {
     const toast = useToast()
     const meilisearchStore = useMeilisearchStore()
-    const tasksPollingEnabled = tasksPollingEnabledState ?? useStorage<boolean>('meilisearch-tasks-polling-enabled', false)
-
-    tasksPollingEnabledState = tasksPollingEnabled
 
     const tasksResults = ref<TasksResults | null>(null)
     const tasks = ref<Task[]>([])
@@ -171,23 +156,28 @@ export function useTasks() {
         const query = normalizeTasksQuery(params ?? currentQuery.value)
         const queryKey = getTasksQueryKey(query)
         const requestVersion = listRequestVersion
+        const loadedTasksCount = Math.max(query.limit ?? 0, tasks.value.length)
 
-        isFetching.value = true
         isPollingLatest.value = true
 
         try {
-            const results = await client.tasks.getTasks(query)
+            const results = await client.tasks.getTasks({
+                ...query,
+                ...(loadedTasksCount > 0 ? { limit: loadedTasksCount } : {}),
+            })
 
             if (requestVersion !== listRequestVersion || getTasksQueryKey(currentQuery.value) !== queryKey) {
                 return results
             }
 
-            tasks.value = prependPolledTasks(tasks.value, results.results)
+            tasksResults.value = results
+            tasks.value = results.results
+            nextCursor.value = results.next
+            hasMore.value = results.next !== null
             return results
         } catch (err) {
             console.error('Failed to poll tasks', err)
         } finally {
-            isFetching.value = false
             isPollingLatest.value = false
         }
     }
@@ -272,7 +262,6 @@ export function useTasks() {
         tasks,
         isFetching,
         isPollingLatest,
-        tasksPollingEnabled,
         hasMore,
         checkingTaskStatus,
         fetchTasks,

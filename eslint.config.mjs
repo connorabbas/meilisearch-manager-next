@@ -24,7 +24,6 @@ export default withNuxt({
         // Formatting rules
         'indent': ['error', 4],
         'semi': ['error', 'never'],
-        //'comma-dangle': ['error', 'never'],
         'quotes': ['error', 'single'],
         'linebreak-style': ['error', 'unix']
     }

@@ -114,7 +114,6 @@ onMounted(() => {
                 :header="taskHeaderTitle"
                 class="w-full sm:w-[60rem]"
                 position="right"
-                blockScroll
                 @hide="currentTask = null"
             >
                 <div>

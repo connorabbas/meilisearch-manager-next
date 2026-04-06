@@ -100,7 +100,6 @@ watch(facetFilters, (newVal) => {
 <template>
     <Drawer
         v-model:visible="drawerOpen"
-        :blockScroll="false"
         header="Filter Documents"
         class="w-full sm:w-[30rem]"
         position="right"

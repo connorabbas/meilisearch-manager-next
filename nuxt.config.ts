@@ -8,7 +8,10 @@ export default defineNuxtConfig({
         head: {
             bodyAttrs: {
                 class: 'antialiased font-sans h-full bg-surface-100 dark:bg-surface-950'
-            }
+            },
+            link: [
+                { rel: 'icon', type: 'image/x-icon', href: '/meili-logo.svg' }
+            ]
         }
     },
     compatibilityDate: '2025-07-15',

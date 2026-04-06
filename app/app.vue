@@ -26,11 +26,11 @@ provide('colorMode', colorMode)
             <AlertCircle />
         </template>
     </ConfirmDialog>
+    <NuxtLoadingIndicator color="var(--p-primary-500)" />
     <NuxtLayout>
         <!-- include tailwind css classes defined in nuxt.config.ts for body tag -->
         <!-- antialiased font-sans h-full bg-surface-100 dark:bg-surface-950 -->
         <NuxtRouteAnnouncer />
-        <NuxtLoadingIndicator color="var(--p-primary-500)" />
         <NuxtPage />
     </NuxtLayout>
 </template>

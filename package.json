@@ -34,6 +34,7 @@
     "devDependencies": {
         "@primevue/nuxt-module": "^4.5.4",
         "@tailwindcss/vite": "^4.2.2",
+        "@types/node": "^25.5.2",
         "@vue/language-core": "^3.2.6",
         "vue-tsc": "^3.2.6"
     }

@@ -18,6 +18,11 @@ export default defineNuxtConfig({
     css: ['~/assets/css/main.css'],
     devtools: { enabled: false },
     modules: ['@primevue/nuxt-module', '@nuxt/fonts', '@pinia/nuxt', '@nuxt/eslint'],
+    router: {
+        options: {
+            hashMode: process.env.NUXT_ROUTER_HASH_MODE === 'true'
+        }
+    },
     runtimeConfig: {
         public: {
             meilisearchHost: '',

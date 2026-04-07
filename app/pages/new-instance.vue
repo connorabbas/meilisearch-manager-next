@@ -216,7 +216,7 @@ async function submitNewInstance(event: FormSubmitEvent) {
                     as="a"
                     label="Repository"
                     variant="link"
-                    href="https://github.com/connorabbas/meilisearch-manager"
+                    href="https://github.com/connorabbas/meilisearch-manager-next"
                     target="_blank"
                     rel="noopener"
                     class="no-underline rounded-none!"

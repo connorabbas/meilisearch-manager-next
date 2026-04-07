@@ -110,7 +110,7 @@ export function looksLikeAnImageUrl(value: any) {
 };
 
 export function prefersDarkColorScheme() {
-    if (window && window.matchMedia) {
+    if (typeof window !== 'undefined' && window.matchMedia) {
         return window.matchMedia('(prefers-color-scheme: dark)').matches
     }
     return false

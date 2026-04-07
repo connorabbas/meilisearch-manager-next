@@ -91,11 +91,16 @@ export function useAppLayout() {
 
     // Mobile menu
     const mobileMenuOpen = ref(false)
-    const windowWidth = ref(window.innerWidth)
+    const windowWidth = ref(0)
     const updateWidth = () => {
+        if (typeof window === 'undefined') {
+            return
+        }
+
         windowWidth.value = window.innerWidth
     }
     onMounted(() => {
+        updateWidth()
         window.addEventListener('resize', updateWidth)
     })
     onUnmounted(() => {

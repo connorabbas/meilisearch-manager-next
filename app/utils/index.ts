@@ -74,13 +74,39 @@ export function looksLikeAnImageUrl(value: any) {
     }
     const url = new URL(value)
     const path = url.pathname.toLowerCase()
-    return (
+
+    const hasImageExtension =
         path.includes('.jpg') ||
         path.includes('.jpeg') ||
         path.includes('.gif') ||
         path.includes('.png') ||
         path.includes('.webp')
+
+    const IMAGE_HOSTING_DOMAINS = [
+        'i.imgur.com',
+        'imgur.com',
+        'i.redd.it',
+        'pbs.twimg.com',
+        'images.unsplash.com',
+        'cdn.pixabay.com',
+        'images.pexels.com',
+        'storage.googleapis.com',
+        'amazonaws.com',
+        'cloudfront.net',
+        'cdn.discordapp.com',
+        'media.discordapp.net',
+        'images.squarespace-cdn.com',
+        'static.wixstatic.com',
+        'framerusercontent.com',
+        'imagedelivery.net',
+        'res.cloudinary.com',
+        'images.ctfassets.net'
+    ]
+    const isImageHost = IMAGE_HOSTING_DOMAINS.some(domain =>
+        url.hostname === domain || url.hostname.endsWith(`.${domain}`)
     )
+
+    return hasImageExtension || isImageHost
 };
 
 export function prefersDarkColorScheme() {

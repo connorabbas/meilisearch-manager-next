@@ -8,7 +8,7 @@ const route = useRoute()
 
 useHead(() => ({
     title: route.meta.title as string | undefined,
-    titleTemplate: (titleChunk) => titleChunk ? `${titleChunk} - Meilisearch Manager Pro` : 'Meilisearch Manager Pro',
+    titleTemplate: (titleChunk) => titleChunk ? `${titleChunk} - Meilisearch Manager` : 'Meilisearch Manager',
 }))
 
 const colorMode = useColorMode({ emitAuto: true })

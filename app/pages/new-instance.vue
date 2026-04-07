@@ -190,7 +190,7 @@ async function submitNewInstance(event: FormSubmitEvent) {
             <div class="flex justify-center items-center gap-6 mt-4">
                 <NuxtLink to="/dashboard">
                     <Button
-                        class="p-0"
+                        class="p-0 rounded-none!"
                         variant="link"
                         label="Dashboard"
                     >
@@ -206,7 +206,7 @@ async function submitNewInstance(event: FormSubmitEvent) {
                     href="https://www.meilisearch.com/docs/home"
                     target="_blank"
                     rel="noopener"
-                    class="no-underline"
+                    class="no-underline rounded-none!"
                 >
                     <template #icon>
                         <BookText />
@@ -219,7 +219,7 @@ async function submitNewInstance(event: FormSubmitEvent) {
                     href="https://github.com/connorabbas/meilisearch-manager"
                     target="_blank"
                     rel="noopener"
-                    class="no-underline"
+                    class="no-underline rounded-none!"
                 >
                     <template #icon>
                         <FolderGit2 />

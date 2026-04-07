@@ -51,6 +51,8 @@ function submitNewKey() {
     })
 }
 
+// TODO: Zod schema validation for submit form
+
 function reset() {
     newKey.value = structuredClone(toRaw(emptyKey))
     allIndexes.value = false

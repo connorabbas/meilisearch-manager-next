@@ -11,6 +11,18 @@ export default defineNuxtRouteMiddleware(async (to) => {
         return
     }
 
+    if (to.path === '/connection-error') {
+        if (meilisearchStore.singleInstanceMode) {
+            return navigateTo('/dashboard', { replace: true })
+        }
+
+        if (!meilisearchStore.hasConfiguredInstance) {
+            return navigateTo('/new-instance', { replace: true })
+        }
+
+        return
+    }
+
     if (!meilisearchStore.hasConfiguredInstance) {
         return navigateTo('/new-instance', { replace: true })
     }
@@ -28,6 +40,6 @@ export default defineNuxtRouteMiddleware(async (to) => {
             })
         }
 
-        return navigateTo('/new-instance', { replace: true })
+        return navigateTo('/connection-error', { replace: true })
     }
 })

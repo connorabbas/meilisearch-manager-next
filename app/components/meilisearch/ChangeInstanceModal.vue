@@ -8,6 +8,12 @@ const meilisearchStore = useMeilisearchStore()
 
 const currentInstanceId = ref(meilisearchStore.currentInstance?.id)
 
+watch(modalOpen, (isOpen) => {
+    if (isOpen) {
+        currentInstanceId.value = meilisearchStore.currentInstance?.id
+    }
+})
+
 async function handleChangeInstance() {
     if (currentInstanceId.value) {
         meilisearchStore.setCurrent(currentInstanceId.value)

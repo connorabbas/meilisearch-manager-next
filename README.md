@@ -18,6 +18,7 @@ This project is the refactored Nuxt version of the original Vue SPA project: [co
 - :waning_crescent_moon: **Dark mode** support
 
 ### Screenshots
+
 <details>
   <summary>Click to expand</summary>
   <img width="3200" height="2000" alt="Screenshot (1)" src="https://github.com/user-attachments/assets/e7ee118f-a093-4799-86f5-bb391592c286" />
@@ -35,14 +36,18 @@ This project is the refactored Nuxt version of the original Vue SPA project: [co
   <img width="3200" height="2000" alt="Screenshot (17)" src="https://github.com/user-attachments/assets/4573d21e-fb3f-4d02-8400-855e4154cd27" />
   <img width="3200" height="2000" alt="Screenshot (13)" src="https://github.com/user-attachments/assets/ae02b6e8-e29e-4927-8e23-a4a73785c212" />
   <img width="3200" height="2000" alt="Screenshot (14)" src="https://github.com/user-attachments/assets/4a6dc8f6-da68-411f-81f1-8d721c78e8ac" />
-  <img width="3200" height="2000" alt="Screenshot (15)" src="https://github.com/user-attachments/assets/d2c09df3-75dc-49d3-a8d0-1488ddbbd69d" />  
+  <img width="3200" height="2000" alt="Screenshot (15)" src="https://github.com/user-attachments/assets/d2c09df3-75dc-49d3-a8d0-1488ddbbd69d" />
 
   Light mode is also supported:  
   <img width="3200" height="2000" alt="Screenshot (18)" src="https://github.com/user-attachments/assets/575606e3-1957-4a42-94cd-e2a0b2a0f1f9" />
+
 </details>
 
-
 ## Getting Started
+
+### Demo
+
+Check out the live demo (hosted with GitHub pages): [https://connorabbas.github.io/meilisearch-manager-next/](https://connorabbas.github.io/meilisearch-manager-next/)
 
 ### Prerequisites
 

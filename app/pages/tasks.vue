@@ -217,7 +217,7 @@ onMounted(() => {
                                     'canceled',
                                 ]"
                                 display="chip"
-                                placeholder="Filter by status"
+                                placeholder="any"
                                 :showToggleAll="false"
                                 showClear
                                 fluid
@@ -264,7 +264,7 @@ onMounted(() => {
                                     'upgradeDatabase',
                                 ]"
                                 display="chip"
-                                placeholder="Filter by type"
+                                placeholder="any"
                                 :showToggleAll="false"
                                 showClear
                                 filter
@@ -284,7 +284,7 @@ onMounted(() => {
                                 pt:overlay:class="z-1!"
                                 :options="indexUids"
                                 display="chip"
-                                placeholder="Filter by index"
+                                placeholder="any"
                                 :showToggleAll="false"
                                 :loading="isFetchingIndexes"
                                 showClear

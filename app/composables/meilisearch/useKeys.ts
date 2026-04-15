@@ -2,17 +2,33 @@ import type { Key, KeyCreation, KeysQuery, KeysResults, KeyUpdate } from 'meilis
 import { useToast } from 'primevue/usetoast'
 import { useMeilisearchStore } from '@/stores/meilisearch'
 import { useConfirm } from 'primevue'
+import { usePagination } from '../usePagination'
 
 export function useKeys() {
     const toast = useToast()
     const confirm = useConfirm()
     const meilisearchStore = useMeilisearchStore()
+    const {
+        currentPage,
+        perPage,
+        firstDatasetIndex,
+        offset,
+        syncCurrentPageWithinTotal,
+        handlePageEvent,
+    } = usePagination()
 
     const keysResults = ref<KeysResults | null>(null)
     const keys = ref<Key[] | null>(null)
     const isFetching = ref(false)
     const isLoading = ref(false)
     const error = ref<string | null>(null)
+
+    const keysQuery = computed<KeysQuery>(() => {
+        return {
+            limit: perPage.value,
+            offset: offset.value,
+        }
+    })
 
     async function fetchKeys(params?: KeysQuery): Promise<KeysResults | undefined> {
         const client = meilisearchStore.getClient()
@@ -38,13 +54,21 @@ export function useKeys() {
         }
     }
 
-    async function fetchAllKeys() {
-        await fetchKeys({
-            limit: 1 // Load in just one, so we can get the total amount for the actual dataset
-        })
-        await fetchKeys({
-            limit: keysResults.value?.total // Hacky way to load all the indexes
-        })
+    async function fetchKeysPaginated(resetPagination: boolean = false): Promise<KeysResults | undefined> {
+        if (resetPagination) {
+            currentPage.value = 1
+        }
+
+        const results = await fetchKeys(keysQuery.value)
+        if (!results) {
+            return results
+        }
+
+        if (syncCurrentPageWithinTotal(results.total)) {
+            return fetchKeys(keysQuery.value)
+        }
+
+        return results
     }
 
     async function createKey(params: KeyCreation): Promise<Key | undefined> {
@@ -145,13 +169,18 @@ export function useKeys() {
     })
 
     return {
+        currentPage,
+        perPage,
+        firstDatasetIndex,
+        offset,
         keys,
         keysResults,
         isFetching,
         isLoading,
         error,
+        handlePageEvent,
         fetchKeys,
-        fetchAllKeys,
+        fetchKeysPaginated,
         createKey,
         updateKey,
         confirmDeleteKey,

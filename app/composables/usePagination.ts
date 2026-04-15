@@ -9,6 +9,20 @@ export function usePagination(initialPerPage: number = 20) {
     })
     const offset = computed(() => (perPage.value * currentPage.value) - perPage.value)
 
+    function syncCurrentPageWithinTotal(totalRecords?: number | null): boolean {
+        if (totalRecords === null || totalRecords === undefined) {
+            return false
+        }
+
+        const lastPage = Math.max(1, Math.ceil(totalRecords / perPage.value))
+        if (currentPage.value > lastPage) {
+            currentPage.value = lastPage
+            return true
+        }
+
+        return false
+    }
+
     function handlePageEvent<T>(
         event: PageState | DataTablePageEvent,
         onPaginatedCallback?: () => Promise<T>,
@@ -39,6 +53,7 @@ export function usePagination(initialPerPage: number = 20) {
         perPage,
         firstDatasetIndex,
         offset,
+        syncCurrentPageWithinTotal,
         handlePageEvent,
     }
 }

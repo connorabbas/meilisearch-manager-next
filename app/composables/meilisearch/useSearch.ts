@@ -6,7 +6,14 @@ import { usePagination } from '@/composables/usePagination'
 export function useSearch(initialPerPage: number = 20) {
     const toast = useToast()
     const meilisearchStore = useMeilisearchStore()
-    const { currentPage, perPage, firstDatasetIndex, offset, handlePageEvent } = usePagination(initialPerPage)
+    const {
+        currentPage,
+        perPage,
+        firstDatasetIndex,
+        offset,
+        syncCurrentPageWithinTotal,
+        handlePageEvent,
+    } = usePagination(initialPerPage)
 
     const searchResults = ref<SearchResponse | null>(null)
     const searchQuery = ref('')
@@ -51,14 +58,24 @@ export function useSearch(initialPerPage: number = 20) {
         }
     }
 
-    function searchPaginated(
+    async function searchPaginated(
         indexUid: string,
         resetPagination: boolean = false
     ): Promise<SearchResponse<RecordAny, SearchParams> | undefined> {
         if (resetPagination) {
             currentPage.value = 1
         }
-        return search(indexUid, searchQuery.value, searchParams.value)
+
+        const results = await search(indexUid, searchQuery.value, searchParams.value)
+        if (!results) {
+            return results
+        }
+
+        if (syncCurrentPageWithinTotal(results.estimatedTotalHits)) {
+            return search(indexUid, searchQuery.value, searchParams.value)
+        }
+
+        return results
     }
 
     watch(error, (newError) => {

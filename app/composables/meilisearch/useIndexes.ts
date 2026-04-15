@@ -9,7 +9,14 @@ export function useIndexes(initialPerPage: number = 20) {
     const toast = useToast()
     const confirm = useConfirm()
     const meilisearchStore = useMeilisearchStore()
-    const { currentPage, perPage, firstDatasetIndex, offset, handlePageEvent } = usePagination(initialPerPage)
+    const {
+        currentPage,
+        perPage,
+        firstDatasetIndex,
+        offset,
+        syncCurrentPageWithinTotal,
+        handlePageEvent,
+    } = usePagination(initialPerPage)
     const { pollTaskStatus } = useTasks()
 
     const indexesResults = ref<IndexesResults<Index[]> | null>(null)
@@ -53,11 +60,21 @@ export function useIndexes(initialPerPage: number = 20) {
         }
     }
 
-    function fetchIndexesPaginated(resetPagination: boolean = false): Promise<IndexesResults<Index[]> | undefined> {
+    async function fetchIndexesPaginated(resetPagination: boolean = false): Promise<IndexesResults<Index[]> | undefined> {
         if (resetPagination) {
             currentPage.value = 1
         }
-        return fetchIndexes(indexesQuery.value)
+
+        const results = await fetchIndexes(indexesQuery.value)
+        if (!results) {
+            return results
+        }
+
+        if (syncCurrentPageWithinTotal(results.total)) {
+            return fetchIndexes(indexesQuery.value)
+        }
+
+        return results
     }
 
     async function fetchAllIndexes() {

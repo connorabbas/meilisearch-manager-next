@@ -20,9 +20,18 @@ definePageMeta({
 
 const toast = useToast()
 const { isSupported: canCopy, copy, copied } = useClipboard()
-const { keys, isFetching: isFetchingKeys, fetchAllKeys, confirmDeleteKey } = useKeys()
+const {
+    perPage,
+    firstDatasetIndex,
+    keys,
+    keysResults,
+    isFetching: isFetchingKeys,
+    fetchKeysPaginated,
+    handlePageEvent,
+    confirmDeleteKey,
+} = useKeys()
 
-await fetchAllKeys()
+await fetchKeysPaginated()
 
 const newKeyDrawerOpen = ref(false)
 const editKeyDrawerOpen = ref(false)
@@ -65,7 +74,7 @@ function toggleKeyContextMenu(event: Event, key: Key) {
                         detail: `THe API Key: "${key.name}" was successfully deleted`,
                         life: 3000,
                     })
-                    fetchAllKeys()
+                    fetchKeysPaginated()
                 })
             },
         },
@@ -108,13 +117,13 @@ const keyCopiedUid = computed(() => (copied.value && lastCopiedKeyUid.value) ? l
             />
             <CreateKeyDrawer
                 v-model="newKeyDrawerOpen"
-                @key-created="fetchAllKeys"
+                @key-created="fetchKeysPaginated"
             />
             <EditKeyDrawer
                 v-model="editKeyDrawerOpen"
                 :api-key="currentKey"
                 @hide="resetCurrentKey"
-                @key-updated="fetchAllKeys"
+                @key-updated="fetchKeysPaginated"
             />
         </Teleport>
 
@@ -143,10 +152,27 @@ const keyCopiedUid = computed(() => (copied.value && lastCopiedKeyUid.value) ? l
                     popup
                 />
                 <DataTable
+                    lazy
+                    paginator
                     :value="keys"
                     :loading="isFetchingKeys"
+                    :rows="perPage"
+                    :first="firstDatasetIndex"
+                    :totalRecords="keysResults?.total"
+                    :rowsPerPageOptions="[20, 50, 100]"
+                    :pt="{
+                        tableContainer: {
+                            id: 'keys-data-table-container'
+                        },
+                        thead: {
+                            class: 'z-2'
+                        }
+                    }"
+                    paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
+                    currentPageReportTemplate="Showing {first} to {last} of {totalRecords} records"
                     scrollable
                     columnResizeMode="fit"
+                    @page="handlePageEvent($event, () => fetchKeysPaginated(), true, 'keys-data-table-container')"
                 >
                     <template #empty>
                         <NotFoundMessage subject="Key" />

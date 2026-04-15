@@ -71,7 +71,10 @@ watch(searchQuery, (newValue) => {
 
 function handleDeleteDocument(documentId: string | number) {
     confirmDeleteDocument(indexUid.value, documentId, () => {
-        fetchData()
+        void Promise.all([
+            searchPaginated(indexUid.value),
+            fetchIndexStats(indexUid.value),
+        ])
     })
 }
 

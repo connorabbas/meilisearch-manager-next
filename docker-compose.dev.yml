@@ -28,7 +28,12 @@ services:
       MEILI_ENV: development
     volumes:
       - 'meilisearch-data:/meili_data'
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.meilisearch-manager-next-instance.rule=Host(`instance.meilisearch-manager-next.localhost`)"
+      - "traefik.http.services.meilisearch-manager-next-instance.loadbalancer.server.port=7700"
     networks:
+      - proxy
       - web
     healthcheck:
       test:

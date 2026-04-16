@@ -1,4 +1,4 @@
-import { LayoutDashboard, FolderSearch, Plus, ArrowLeftRight, Trash2, ListCheck, KeyRound } from '@lucide/vue'
+import { FolderSearch, Plus, ArrowLeftRight, Trash2, ListCheck, KeyRound, DatabaseBackup, LayoutGrid } from '@lucide/vue'
 import type { MenuItem } from '@/types'
 import { useMeilisearchStore } from '@/stores/meilisearch'
 
@@ -20,7 +20,7 @@ export function useAppLayout() {
     const menuItems = computed<MenuItem[]>(() => [
         {
             label: 'Dashboard',
-            lucideIcon: LayoutDashboard,
+            lucideIcon: LayoutGrid,
             route: '/dashboard',
             active: isActiveRoute('dashboard'),
         },
@@ -41,6 +41,12 @@ export function useAppLayout() {
             lucideIcon: KeyRound,
             route: '/keys',
             active: isActiveRoute('keys'),
+        },
+        {
+            label: 'Backups',
+            lucideIcon: DatabaseBackup,
+            route: '/backups',
+            active: isActiveRoute('backups') || currentPath.value.startsWith('/backups'),
         },
         /* {
             label: 'Meilisearch Docs',

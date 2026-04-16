@@ -172,7 +172,7 @@ const keyCopiedUid = computed(() => (copied.value && lastCopiedKeyUid.value) ? l
                     currentPageReportTemplate="Showing {first} to {last} of {totalRecords} records"
                     scrollable
                     columnResizeMode="fit"
-                    @page="handlePageEvent($event, () => fetchKeysPaginated(), true, 'keys-data-table-container')"
+                    @page="handlePageEvent($event, () => fetchKeysPaginated())"
                 >
                     <template #empty>
                         <NotFoundMessage subject="Key" />

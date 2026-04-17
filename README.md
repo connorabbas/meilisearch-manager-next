@@ -14,6 +14,7 @@ This project is the refactored Nuxt version of the original Vue SPA project: [co
 - :page_facing_up: **Documents** import, search, sort, filter, pagination, edit, and delete flows
 - :lock: **API keys** create, view, edit, copy, and delete flows
 - :ballot_box_with_check: **Tasks** history with filtering, infinite scroll, and optional polling
+- :hourglass: **Data backups** with dump and snapshot exports
 - :iphone: **Responsive** layout
 - :waning_crescent_moon: **Dark mode** support
 

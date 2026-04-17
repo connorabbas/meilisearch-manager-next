@@ -5,6 +5,11 @@
             "type": "remote",
             "url": "https://nuxt.com/mcp",
             "enabled": true
+        },
+        "primevue": {
+            "type": "local",
+            "enabled": true,
+            "command": ["npx", "-y", "@primevue/mcp"]
         }
     }
 }

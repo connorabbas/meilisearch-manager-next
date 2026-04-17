@@ -13,6 +13,7 @@ import Menu from '@/components/router-link-menus/Menu.vue'
 import ImportDocumentsDrawer from '@/components/meilisearch/ImportDocumentsDrawer.vue'
 import EditDocumentDrawer from '@/components/meilisearch/EditDocumentDrawer.vue'
 import FilterDocumentsDrawer from '@/components/meilisearch/FilterDocumentsDrawer.vue'
+import DocumentsGeoMap from '@/components/meilisearch/DocumentsGeoMap.vue'
 import { looksLikeAnImageUrl } from '@/utils'
 
 definePageMeta({
@@ -38,6 +39,7 @@ const {
     searchResults,
     searchQuery,
     searchSort,
+    searchGeoSort,
     searchFilter,
     isFetching: isSearching,
     searchPaginated,
@@ -55,7 +57,16 @@ async function fetchData() {
 }
 await fetchData()
 
-const dataView = ref<'JSON' | 'Table'>('JSON')
+const dataView = ref<'JSON' | 'Table' | 'Geo'>('JSON')
+const hasGeoView = computed(() => {
+    const fieldNames = Object.keys(indexStats.value?.fieldDistribution ?? {})
+    return fieldNames.includes('_geo') || fieldNames.includes('_geojson')
+})
+const dataViewOptions = computed(() => {
+    return hasGeoView.value
+        ? ['JSON', 'Table', 'Geo']
+        : ['JSON', 'Table']
+})
 
 // Search
 const debouncedSearch = useDebounceFn(() => {
@@ -84,15 +95,18 @@ type SortOptions = {
     label: string,
 }
 const sortMessage = computed(() => {
-    if (sortableAttributes.value?.length) {
+    if (sortingOptions.value.length > 0) {
         return 'Sort Documents'
     }
     return 'No sortable attributes available, please update the index settings'
 })
 // Basic single sort, TODO: use Multiselect for multi-sort?
+const standardSortableAttributes = computed(() => {
+    return (sortableAttributes.value ?? []).filter(attribute => attribute !== '_geo')
+})
 const sortingOptions = computed(() => {
     const options: SortOptions[] = []
-    sortableAttributes.value?.forEach((attribute) => {
+    standardSortableAttributes.value.forEach((attribute) => {
         options.push({
             value: [`${attribute}:asc`],
             label: `${attribute}:asc`,
@@ -177,6 +191,14 @@ function handleFieldPopoverHidden() {
 watch(searchFilter, () => {
     searchPaginated(indexUid.value, true)
 })
+watch(searchGeoSort, () => {
+    searchPaginated(indexUid.value, true)
+})
+watch(hasGeoView, (value) => {
+    if (!value && dataView.value === 'Geo') {
+        dataView.value = 'JSON'
+    }
+})
 
 onMounted(async () => {
     await Promise.all([
@@ -218,9 +240,12 @@ onMounted(async () => {
                 <FilterDocumentsDrawer
                     v-model="showFilteringDrawerOpen"
                     v-model:filter="searchFilter"
+                    v-model:geo-sort="searchGeoSort"
                     :index-uid="indexUid"
                     :filterable-attributes="filterableAttributes"
+                    :sortable-attributes="sortableAttributes"
                     :searching="isSearching"
+                    :enable-geo-filters="dataView === 'Geo'"
                     :total-hits="searchResults?.estimatedTotalHits"
                 />
             </div>
@@ -275,7 +300,7 @@ onMounted(async () => {
                                 </template>
                             </Button>
                             <span
-                                v-if="searchFilter"
+                                v-if="searchFilter || searchGeoSort"
                                 class="absolute top-0 right-0 -mt-1 -mr-1 flex size-3"
                             >
                                 <span class="relative inline-flex size-3 rounded-full bg-primary" />
@@ -284,7 +309,7 @@ onMounted(async () => {
                         <div>
                             <SelectButton
                                 v-model="dataView"
-                                :options="['JSON', 'Table']"
+                                :options="dataViewOptions"
                                 :allowEmpty="false"
                             />
                         </div>
@@ -292,6 +317,7 @@ onMounted(async () => {
                 </div>
             </template>
         </Card>
+
         <!-- Table view -->
         <Card v-show="dataView === 'Table'">
             <template #content>
@@ -416,6 +442,54 @@ onMounted(async () => {
                 </DataTable>
             </template>
         </Card>
+
+        <!-- Geo View -->
+        <div v-show="dataView === 'Geo'">
+            <Card>
+                <template #content>
+                    <div v-if="!searchResults?.hits.length && isSearching">
+                        <div class="h-full flex flex-col items-center justify-center p-8 gap-4">
+                            <ProgressSpinner
+                                pt:root:class="h-15"
+                                strokeWidth="4"
+                                animationDuration=".5s"
+                            />
+                            <div class="text-sm text-muted-color">
+                                Loading Documents...
+                            </div>
+                        </div>
+                    </div>
+                    <div v-else-if="searchResults?.hits.length">
+                        <ClientOnly>
+                            <DocumentsGeoMap
+                                :hits="searchResults.hits"
+                                :primary-key="primaryKey"
+                            />
+                        </ClientOnly>
+                    </div>
+                    <div v-else>
+                        <NotFoundMessage subject="Document" />
+                    </div>
+                </template>
+            </Card>
+
+            <div
+                v-if="searchResults?.hits.length"
+                class="mt-4"
+            >
+                <Paginator
+                    :rows="perPage"
+                    :first="firstDatasetIndex"
+                    :totalRecords="searchResults?.estimatedTotalHits"
+                    :rowsPerPageOptions="[20, 50, 100]"
+                    pt:root:class="shadow-sm border dynamic-border rounded-xl"
+                    template="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
+                    currentPageReportTemplate="Showing {first} to {last} of {totalRecords} records"
+                    @page="handlePageEvent($event, () => searchPaginated(indexUid), false)"
+                />
+            </div>
+        </div>
+
         <!-- JSON View -->
         <div
             v-show="dataView === 'JSON'"

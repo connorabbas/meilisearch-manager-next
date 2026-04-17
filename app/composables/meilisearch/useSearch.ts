@@ -18,14 +18,24 @@ export function useSearch(initialPerPage: number = 20) {
     const searchResults = ref<SearchResponse | null>(null)
     const searchQuery = ref('')
     const searchSort = ref<string[]>([])
+    const searchGeoSort = ref<string | null>(null)
     const searchFilter = ref<Filter | null>(null)
+
+    const searchSortValues = computed<string[]>(() => {
+        const sortValues = [...searchSort.value]
+        if (searchGeoSort.value) {
+            sortValues.unshift(searchGeoSort.value)
+        }
+
+        return sortValues
+    })
 
     const isFetching = ref(false)
     const error = ref<string | null>(null)
 
     const searchParams = computed<SearchParams>(() => {
         return {
-            sort: searchSort.value,
+            sort: searchSortValues.value.length > 0 ? searchSortValues.value : undefined,
             filter: searchFilter.value ?? undefined,
             limit: perPage.value,
             offset: offset.value,
@@ -97,6 +107,7 @@ export function useSearch(initialPerPage: number = 20) {
         searchResults,
         searchQuery,
         searchSort,
+        searchGeoSort,
         searchFilter,
         isFetching,
         error,

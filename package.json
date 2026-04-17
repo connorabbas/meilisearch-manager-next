@@ -22,6 +22,7 @@
         "json-editor-vue": "^0.18.1",
         "meilisearch": "^0.57.0",
         "nuxt": "^4.4.2",
+        "nuxt-maplibre": "^1.2.2",
         "primevue": "^4.5.4",
         "tailwind-merge": "^3.5.0",
         "tailwindcss": "^4.2.2",

@@ -11,7 +11,7 @@ This project is the refactored Nuxt version of the original Vue SPA project: [co
 - :bar_chart: **Dashboard** with stats and version details
 - :open_file_folder: **Indexes** listing, creation, inspection, primary key updates, and deletion
 - :gear: **Index settings** full JSON viewer/editor
-- :page_facing_up: **Documents** import, search, sort, filter, pagination, edit, and delete flows
+- :page_facing_up: **Documents** import, search (full-text, geo), sort, filter, pagination, edit, and delete flows
 - :lock: **API keys** create, view, edit, copy, and delete flows
 - :ballot_box_with_check: **Tasks** history with filtering, infinite scroll, and optional polling
 - :hourglass: **Data backups** with dump and snapshot exports

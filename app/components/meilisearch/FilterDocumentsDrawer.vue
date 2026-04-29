@@ -85,7 +85,7 @@ function updateFacetFilterValue(attributeName: string, value: string[]) {
 }
 
 function escapeFilterValue(value: string) {
-    return value.replaceAll("'", "\\'")
+    return value.replaceAll('\'', '\\\'')
 }
 
 function parseNumberValue(value: string): number | null {

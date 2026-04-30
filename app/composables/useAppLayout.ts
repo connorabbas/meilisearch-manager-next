@@ -1,4 +1,4 @@
-import { FolderSearch, Plus, ArrowLeftRight, Trash2, ListCheck, KeyRound, DatabaseBackup, LayoutGrid } from '@lucide/vue'
+import { FolderSearch, Plus, ArrowLeftRight, Trash2, ListCheck, KeyRound, DatabaseBackup, LayoutGrid, FlaskConical } from '@lucide/vue'
 import type { MenuItem } from '@/types'
 import { useMeilisearchStore } from '@/stores/meilisearch'
 
@@ -34,7 +34,7 @@ export function useAppLayout() {
             label: 'Tasks',
             lucideIcon: ListCheck,
             route: '/tasks',
-            active: isActiveRoute('tasks') || currentPath.value.startsWith('/tasks'),
+            active: isActiveRoute('tasks')
         },
         {
             label: 'Keys',
@@ -46,13 +46,14 @@ export function useAppLayout() {
             label: 'Backups',
             lucideIcon: DatabaseBackup,
             route: '/backups',
-            active: isActiveRoute('backups') || currentPath.value.startsWith('/backups'),
+            active: isActiveRoute('backups'),
         },
-        /* {
-            label: 'Meilisearch Docs',
-            lucideIcon: BookText,
-            link: 'https://www.meilisearch.com/docs/home',
-        }, */
+        {
+            label: 'Experimental',
+            lucideIcon: FlaskConical,
+            route: '/experimental-features',
+            active: isActiveRoute('experimental-features'),
+        },
     ])
 
     // Meilisearch instance

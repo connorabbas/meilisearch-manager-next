@@ -135,3 +135,10 @@ export function readFileAsText(file: File): Promise<string> {
         reader.readAsText(file)
     })
 }
+
+export function camelCaseToReadable(str: string): string {
+    return str
+        .replace(/([A-Z])/g, ' $1')
+        .replace(/^./, str.charAt(0).toUpperCase())
+        .trim()
+}

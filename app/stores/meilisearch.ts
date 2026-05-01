@@ -14,32 +14,76 @@ export interface MeilisearchInstanceConfig {
 export const useMeilisearchStore = defineStore('meilisearch', () => {
     const toast = useToast()
     const confirm = useConfirm()
-    const runtimeConfig = useRuntimeConfig()
 
-    const hostEnv = String(runtimeConfig.public.meilisearchHost ?? '')
-    const apiKeyEnv = String(runtimeConfig.public.meilisearchApiKey ?? '')
-    const singleInstanceMode = !!hostEnv && !!apiKeyEnv
+    // -- State --
+    const secureMode = ref(false)
+    const initialized = ref(false)
 
-    const instances = singleInstanceMode
-        ? ref<MeilisearchInstanceConfig[]>([{
-            id: 'default',
-            name: 'Default',
-            host: hostEnv,
-            apiKey: apiKeyEnv,
-        }])
-        : useStorage<MeilisearchInstanceConfig[]>('meilisearch-instances', [])
-
-    const currentInstanceId = singleInstanceMode
-        ? ref<string | null>('default')
-        : useStorage<string | null>('meilisearch-current-id', null)
-
-    const currentInstance = computed(() => instances.value.find(i => i.id === currentInstanceId.value) ?? null)
-    const hasConfiguredInstance = computed(() => instances.value.length > 0)
+    const instances = ref<MeilisearchInstanceConfig[]>([])
+    const currentInstanceId = ref<string | null>(null)
 
     const client = shallowRef<Meilisearch | null>(null)
     const isConnecting = ref(false)
     const connectionError = ref<string | null>(null)
+
+    // -- Computed --
+    const singleInstanceMode = computed(() => secureMode.value)
+    const currentInstance = computed(() => instances.value.find(i => i.id === currentInstanceId.value) ?? null)
+    const hasConfiguredInstance = computed(() => instances.value.length > 0)
     const isConnected = computed(() => client.value !== null && !connectionError.value)
+
+    // -- Watcher cleanup --
+    let _unwatchInstances: (() => void) | undefined
+    let _unwatchCurrentId: (() => void) | undefined
+
+    // -- Initialization --
+    function initializeSecureMode(host: string) {
+        if (initialized.value) return
+
+        secureMode.value = true
+        instances.value = [{
+            id: 'default',
+            name: 'Default',
+            host,
+            apiKey: '',
+        }]
+        currentInstanceId.value = 'default'
+        initialized.value = true
+    }
+
+    function initializeMultiInstance() {
+        if (initialized.value) return
+
+        const storedInstances = useStorage<MeilisearchInstanceConfig[]>('meilisearch-instances', [])
+        const storedCurrentId = useStorage<string | null>('meilisearch-current-id', null)
+
+        instances.value = storedInstances.value
+        currentInstanceId.value = storedCurrentId.value
+
+        _unwatchInstances = watch(instances, (val) => {
+            storedInstances.value = val
+        }, { deep: true })
+
+        _unwatchCurrentId = watch(currentInstanceId, (val) => {
+            storedCurrentId.value = val
+        })
+
+        secureMode.value = false
+        initialized.value = true
+    }
+
+    function dispose() {
+        _unwatchInstances?.()
+        _unwatchCurrentId?.()
+        _unwatchInstances = undefined
+        _unwatchCurrentId = undefined
+        client.value = null
+        connectionError.value = null
+        instances.value = []
+        currentInstanceId.value = null
+        initialized.value = false
+        secureMode.value = false
+    }
 
     async function checkConnection(host: string, apiKey: string): Promise<void> {
         try {
@@ -102,6 +146,10 @@ export const useMeilisearchStore = defineStore('meilisearch', () => {
     }
 
     async function addInstance(config: Omit<MeilisearchInstanceConfig, 'id'>) {
+        if (secureMode.value) {
+            throw new Error('Cannot add instances in secure mode')
+        }
+
         if (instances.value.some(i => i.host === config.host)) {
             const errorMessage = `An instance with host "${config.host}" already exists`
             toast.add({
@@ -135,6 +183,7 @@ export const useMeilisearchStore = defineStore('meilisearch', () => {
     }
 
     function removeInstance(id: string) {
+        if (secureMode.value) return
         instances.value = instances.value.filter(i => i.id !== id)
         if (currentInstanceId.value === id) {
             currentInstanceId.value = instances.value[0]?.id ?? null
@@ -147,6 +196,7 @@ export const useMeilisearchStore = defineStore('meilisearch', () => {
         id: string,
         onRemovedCallback?: () => void | Promise<void>
     ) {
+        if (secureMode.value) return
         confirm.require({
             group: 'delete',
             message: 'Are you sure you want to remove this instance?',
@@ -182,10 +232,15 @@ export const useMeilisearchStore = defineStore('meilisearch', () => {
         isConnecting: readonly(isConnecting),
         isConnected,
         connectionError: readonly(connectionError),
+        secureMode: readonly(secureMode),
+        initialized: readonly(initialized),
         singleInstanceMode,
         hasConfiguredInstance,
         instances: readonly(instances),
         currentInstance: readonly(currentInstance),
+        initializeSecureMode,
+        initializeMultiInstance,
+        dispose,
         connect,
         getClient,
         addInstance,

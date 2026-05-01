@@ -11,6 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       NUXT_APP_BASE_URL: /${{ github.event.repository.name }}/
+      NUXT_PUBLIC_STATIC_DEPLOY: true
     steps:
       - uses: actions/checkout@v4
       - run: corepack enable

@@ -3,6 +3,10 @@ import { useMeilisearchStore } from '@/stores/meilisearch'
 export default defineNuxtRouteMiddleware(async (to) => {
     const meilisearchStore = useMeilisearchStore()
 
+    if (!meilisearchStore.initialized) {
+        return
+    }
+
     if (to.path === '/new-instance') {
         if (meilisearchStore.singleInstanceMode) {
             return navigateTo('/dashboard', { replace: true })
@@ -32,11 +36,10 @@ export default defineNuxtRouteMiddleware(async (to) => {
     } catch {
         if (meilisearchStore.singleInstanceMode) {
             throw createError({
-                statusCode: 503,
-                statusMessage: 'Unable to connect to the configured Meilisearch instance',
-                data: {
-                    message: meilisearchStore.connectionError ?? 'Check your Meilisearch host and API key environment variables.',
-                },
+                status: 503,
+                statusText: 'Service Unavailable',
+                message: meilisearchStore.connectionError ?? 'Unable to connect to the configured Meilisearch instance. Check your environment variables.',
+                fatal: true,
             })
         }
 

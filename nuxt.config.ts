@@ -25,16 +25,13 @@ export default defineNuxtConfig({
             failOnError: false,
         },
     },
-    router: {
-        options: {
-            hashMode: process.env.NUXT_ROUTER_HASH_MODE === 'true'
-        }
-    },
     runtimeConfig: {
+        secureMode: false,
+        meilisearchHost: '',
+        meilisearchApiKey: '',
         public: {
-            meilisearchHost: '',
-            meilisearchApiKey: ''
-        }
+            staticDeploy: false,
+        },
     },
     primevue: {
         options: {

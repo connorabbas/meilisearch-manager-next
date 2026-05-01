@@ -6,44 +6,18 @@ This project is the refactored Nuxt version of the original Vue SPA project: [co
 
 ## Features
 
-- :rocket: **Multiple instances** management
-- :electric_plug: **Single instance** mode via runtime config
+- :rocket: **Multi-instance** mode for local development and testing
+- :lock: **Secure single-instance** mode for production deployments
 - :bar_chart: **Dashboard** with stats and version details
 - :open_file_folder: **Indexes** listing, creation, inspection, primary key updates, and deletion
 - :gear: **Index settings** full JSON viewer/editor
 - :page_facing_up: **Documents** import, search (full-text, geo), sort, filter, pagination, edit, and delete flows
-- :lock: **API keys** create, view, edit, copy, and delete flows
+- :key: **API keys** create, view, edit, copy, and delete flows
 - :ballot_box_with_check: **Tasks** history with filtering, infinite scroll, and optional polling
 - :hourglass: **Data backups** with dump and snapshot exports
 - :test_tube: **Experimental features** toggling
 - :iphone: **Responsive** layout
 - :waning_crescent_moon: **Dark mode** support
-
-### Screenshots
-
-<details>
-  <summary>Click to expand</summary>
-  <img width="3200" height="2000" alt="Screenshot (1)" src="https://github.com/user-attachments/assets/e7ee118f-a093-4799-86f5-bb391592c286" />
-  <img width="3200" height="2000" alt="Screenshot (2)" src="https://github.com/user-attachments/assets/4e1aeee1-64ea-4b1a-8f15-cba76da86ac2" />
-  <img width="3200" height="2000" alt="Screenshot (3)" src="https://github.com/user-attachments/assets/85d0c0a0-20c9-41f9-a80f-3986a30e40b7" />
-  <img width="3200" height="2000" alt="Screenshot (4)" src="https://github.com/user-attachments/assets/5d27b5a3-4a8d-43e5-af26-54a68bb59e65" />
-  <img width="3200" height="2000" alt="Screenshot (5)" src="https://github.com/user-attachments/assets/e558a4d1-fec3-4000-8de1-870fe4a89d8e" />
-  <img width="3200" height="2000" alt="Screenshot (6)" src="https://github.com/user-attachments/assets/4f8c5b94-fd58-4c7a-8e76-94a95fc33f29" />
-  <img width="3200" height="2000" alt="Screenshot (7)" src="https://github.com/user-attachments/assets/77963cf7-3063-47d9-a876-a35c83866d9f" />
-  <img width="3200" height="2000" alt="Screenshot (8)" src="https://github.com/user-attachments/assets/961de20f-8961-4ade-b595-5db8c6350ae0" />
-  <img width="3200" height="2000" alt="Screenshot (9)" src="https://github.com/user-attachments/assets/4a238082-c8b0-4ebd-b980-d68cb88f839c" />
-  <img width="3200" height="2000" alt="Screenshot (16)" src="https://github.com/user-attachments/assets/a69aa22a-a2b0-4fad-9171-e3d910abfdff" />
-  <img width="3200" height="2000" alt="Screenshot (10)" src="https://github.com/user-attachments/assets/26367c1c-ea06-4351-8422-53d4e5d3d429" />
-  <img width="3200" height="2000" alt="Screenshot (11)" src="https://github.com/user-attachments/assets/4ea66a44-30d8-4dc7-aff9-e8a04f4df075" />
-  <img width="3200" height="2000" alt="Screenshot (17)" src="https://github.com/user-attachments/assets/4573d21e-fb3f-4d02-8400-855e4154cd27" />
-  <img width="3200" height="2000" alt="Screenshot (13)" src="https://github.com/user-attachments/assets/ae02b6e8-e29e-4927-8e23-a4a73785c212" />
-  <img width="3200" height="2000" alt="Screenshot (14)" src="https://github.com/user-attachments/assets/4a6dc8f6-da68-411f-81f1-8d721c78e8ac" />
-  <img width="3200" height="2000" alt="Screenshot (15)" src="https://github.com/user-attachments/assets/d2c09df3-75dc-49d3-a8d0-1488ddbbd69d" />
-
-  Light mode is also supported:  
-  <img width="3200" height="2000" alt="Screenshot (18)" src="https://github.com/user-attachments/assets/575606e3-1957-4a42-94cd-e2a0b2a0f1f9" />
-
-</details>
 
 ## Getting Started
 
@@ -80,20 +54,64 @@ npm run typecheck
 
 ## Configuration
 
-By default, the app supports saving and switching between multiple Meilisearch instances in browser storage.
+The app supports two distinct operational modes, each designed for a different use case.
 
-If you only need to manage one instance, you can configure single-instance mode with public runtime config values:
+### Multi-Instance Mode (Default)
+
+Designed for **local development, testing, and exploration**.
+
+In this mode, the app behaves as a pure client-side SPA. You can add, manage, and switch between multiple Meilisearch instances directly from the browser UI. Instance credentials (host and API key) are stored in the browser's `localStorage`.
+
+**Characteristics:**
+- Manage multiple Meilisearch instances from one dashboard
+- Credentials stored in browser `localStorage` (never sent to any backend server)
+- The Meilisearch JavaScript client runs directly in the browser
+- Your Meilisearch instance must expose appropriate CORS headers
+- Can be deployed statically (GitHub Pages, S3, CDN, etc.)
+
+> [!NOTE]
+> Credentials in `localStorage` are isolated to the browser and the app's origin. They are not transmitted to any server. This is generally safe for development and testing, but may not meet organizational security requirements for production use.
+
+### Secure Single-Instance Mode (Production)
+
+Designed for **production deployments** where you want to manage a single Meilisearch instance without exposing admin credentials to the browser.
+
+In this mode, the app runs behind a Nitro server. The admin API key lives only in server-side environment variables. All Meilisearch requests are transparently proxied through the app's backend, which injects the real credentials server-side.
 
 ```env
-NUXT_PUBLIC_MEILISEARCH_HOST=https://your-instance-domain.com
-NUXT_PUBLIC_MEILISEARCH_API_KEY=yourInstanceKey
+NUXT_MEILISEARCH_HOST=https://your-instance-domain.com
+NUXT_MEILISEARCH_API_KEY=yourAdminApiKey
 ```
 
-> [!CAUTION]
->
-> **Security Warning**
->
-> These public runtime values are exposed to the client application. If you use an admin API key here, it will be available in the built frontend. Only use single-instance mode when access to the app is otherwise restricted, such as behind authentication or within a trusted internal network.
+**Characteristics:**
+- Admin API key is **server-side only** - never exposed to the client
+- All requests proxied through `/api/meilisearch/*` with credentials injected by Nitro
+- Instance management UI is disabled (single pre-configured instance only)
+- Eliminates CORS concerns (browser talks to same-origin proxy)
+- **Requires a running Nitro server** - cannot be used with static hosting
+
+**Typical deployment:** Host the app alongside your Meilisearch instance (same network/VPC, or behind the same reverse proxy) so the Nitro server can reach Meilisearch securely.
+
+### Explicit Mode Control
+
+You can explicitly force a mode with `NUXT_SECURE_MODE`:
+
+```env
+NUXT_SECURE_MODE=true   # Force secure mode (throws on startup if credentials missing)
+NUXT_SECURE_MODE=false  # Force multi-instance mode (even if credentials are set)
+```
+
+If omitted, the app auto-detects: secure mode activates when both `NUXT_MEILISEARCH_HOST` and `NUXT_MEILISEARCH_API_KEY` are present.
+
+### Static Deployments
+
+For static hosting (GitHub Pages, S3, CDN), set:
+
+```env
+NUXT_PUBLIC_STATIC_DEPLOY=true
+```
+
+This skips the server configuration check entirely and boots directly into multi-instance mode. This is automatically set in the GitHub Pages workflow.
 
 ## Tech Stack
 
@@ -107,8 +125,3 @@ NUXT_PUBLIC_MEILISEARCH_API_KEY=yourInstanceKey
 - [Lucide Vue](https://lucide.dev/)
 - [Meilisearch JavaScript/TypeScript client](https://github.com/meilisearch/meilisearch-js)
 - [Zod](https://zod.dev/)
-
-## Notes
-
-- This Nuxt app currently runs with `ssr: false`, so it behaves as a client-rendered dashboard.
-- Connecting to a Meilisearch instance from the browser may require that instance to expose the appropriate CORS headers for your app domain.

@@ -4,8 +4,8 @@ services:
       context: .
       dockerfile: Dockerfile
       target: dev
-    container_name: meilisearch-manager-next
-    hostname: meilisearch-manager-next
+    container_name: meilisearch-manager
+    hostname: meilisearch-manager
     entrypoint: /bin/bash
     working_dir: /workspace
     volumes:
@@ -13,8 +13,8 @@ services:
     tty: true
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.meilisearch-manager-next.rule=Host(`meilisearch-manager-next.localhost`)"
-      - "traefik.http.services.meilisearch-manager-next.loadbalancer.server.port=${NUXT_APP_PORT:-3000}"
+      - "traefik.http.routers.meilisearch-manager.rule=Host(`meilisearch-manager.localhost`)"
+      - "traefik.http.services.meilisearch-manager.loadbalancer.server.port=${NUXT_APP_PORT:-3000}"
     networks:
       - proxy
       - web
@@ -31,8 +31,8 @@ services:
       - 'meilisearch-data:/meili_data'
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.meilisearch-manager-next-instance.rule=Host(`instance.meilisearch-manager-next.localhost`)"
-      - "traefik.http.services.meilisearch-manager-next-instance.loadbalancer.server.port=7700"
+      - "traefik.http.routers.meilisearch-manager-instance.rule=Host(`instance.meilisearch-manager.localhost`)"
+      - "traefik.http.services.meilisearch-manager-instance.loadbalancer.server.port=7700"
     networks:
       - proxy
       - web

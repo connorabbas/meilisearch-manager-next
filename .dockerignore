@@ -1,0 +1,67 @@
+# Version control
+.git/
+.gitignore
+.gitattributes
+
+# Environment files (secrets injected at runtime)
+.env*
+!.env.example
+
+# Docker & infrastructure
+Dockerfile*
+docker-*.yml
+.dockerignore
+
+# CI/CD
+.github/
+.gitlab-ci.yml
+.circleci/
+Jenkinsfile
+
+# AI / agentic tooling
+.agents/
+.opencode/
+.claude/
+.cursor/
+.windsurf/
+.aider*
+.copilot/
+.codeium/
+.continue/
+.roo/
+opencode.json
+
+# IDE & editors
+.idea/
+.vscode/
+.editorconfig
+*.swp
+*.swo
+*~
+
+# OS junk
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Dependencies & caches
+node_modules/
+.npm/
+.pnpm-store/
+npm-debug.log*
+
+# Build outputs
+.nuxt/
+.output/
+dist/
+
+# Development tooling
+eslint.config.mjs
+
+# Documentation
+*.md
+LICENSE
+docs/
+
+# Logs
+*.log

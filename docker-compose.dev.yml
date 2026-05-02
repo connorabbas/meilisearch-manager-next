@@ -2,7 +2,8 @@ services:
   nuxt:
     build:
       context: .
-      dockerfile: Dockerfile.dev
+      dockerfile: Dockerfile
+      target: dev
     container_name: meilisearch-manager-next
     hostname: meilisearch-manager-next
     entrypoint: /bin/bash

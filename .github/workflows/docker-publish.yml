@@ -1,0 +1,58 @@
+name: Docker Publish
+
+on:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  build-node:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Login to Docker Hardened Images
+        uses: docker/login-action@v3
+        with:
+          registry: dhi.io
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Extract semver
+        id: semver
+        run: echo "version=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+
+      - name: Build and push (node)
+        uses: serversideup/github-action-docker-build@v6
+        with:
+          tags: |
+            cabbas23/meilisearch-manager:node-latest
+            cabbas23/meilisearch-manager:node-${{ steps.semver.outputs.version }}
+          registry-username: ${{ secrets.DOCKER_USERNAME }}
+          registry-password: ${{ secrets.DOCKER_PASSWORD }}
+          dockerfile: ./Dockerfile
+          target: release-node
+          platforms: linux/amd64,linux/arm64
+
+  build-nginx:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Extract semver
+        id: semver
+        run: echo "version=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+
+      - name: Build and push (nginx)
+        uses: serversideup/github-action-docker-build@v6
+        with:
+          tags: |
+            cabbas23/meilisearch-manager:nginx-latest
+            cabbas23/meilisearch-manager:nginx-${{ steps.semver.outputs.version }}
+          registry-username: ${{ secrets.DOCKER_USERNAME }}
+          registry-password: ${{ secrets.DOCKER_PASSWORD }}
+          dockerfile: ./Dockerfile
+          target: release-nginx
+          platforms: linux/amd64,linux/arm64

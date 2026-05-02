@@ -22,6 +22,6 @@ export default defineEventHandler((event) => {
         return { secureMode: false }
     }
 
-    // Omitted -> auto-detect
+    // 'auto' (or omitted) -> auto-detect based on credentials presence
     return { secureMode: Boolean(config.meilisearchHost && config.meilisearchApiKey) }
 })

@@ -84,8 +84,6 @@ The `node` images run the secure single-instance mode and are meant for producti
 >
 > **You MUST deploy this behind an authentication layer** (e.g., Traefik Basic Auth, VPN, Cloudflare Access) or restrict it to a private network. Exposing the node image directly to the internet without authentication is equivalent to giving public admin access to your Meilisearch instance.
 
-Do not expose the Node image directly to the public internet without authentication. Doing so is equivalent to giving public access to the configured Meilisearch API key.
-
 ### Docker Compose
 
 Example production-ready compose stack using [Traefik](https://doc.traefik.io/traefik/reference/install-configuration/providers/docker/) as a reverse proxy with [Basic Auth](https://doc.traefik.io/traefik/reference/routing-configuration/http/middlewares/basicauth/) middleware. Traefik would typically be set up as its own service in a different compose stack. You can reference [this example](https://github.com/connorabbas/traefik-docker-compose/blob/master/docker-compose.yml).
@@ -185,8 +183,8 @@ networks:
    adminuser:$2y$05$abcdefghijklmnopqrstuvwxyz...
    ```
 
-   > [!IMPORTANT]
-   > Escape `$` characters in Docker Compose. Compose treats `$` as variable interpolation syntax, so every `$` in the bcrypt hash must become `$$` in the label.
+> [!IMPORTANT]
+> Escape `$` characters in Docker Compose. Compose treats `$` as variable interpolation syntax, so every `$` in the bcrypt hash must become `$$` in the label.
 
    ```text
    adminuser:$2y$05$...  ->  adminuser:$$2y$$05$$...

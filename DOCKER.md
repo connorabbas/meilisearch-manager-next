@@ -234,29 +234,6 @@ You can create the dedicated key in either of these ways:
 - Use the Manager UI's API Keys page after starting once with the bootstrap master key.
 - Use the Meilisearch API directly: [Create an API key](https://www.meilisearch.com/docs/reference/api/keys/create-api-key).
 
-Recommended permissions for the dedicated Manager key:
-
-```json
-{
-  "actions": [
-    "search",
-    "documents.*",
-    "indexes.*",
-    "tasks.*",
-    "settings.*",
-    "stats.*",
-    "dumps.*",
-    "snapshots.*",
-    "keys.*",
-    "version",
-    "experimental.get",
-    "experimental.update"
-  ],
-  "indexes": ["*"],
-  "expiresAt": null
-}
-```
-
 After updating `MEILISEARCH_MANAGER_API_KEY`, recreate the Manager container so the new environment value is loaded:
 
 ```shell

@@ -107,7 +107,7 @@ Both support `linux/amd64` and `linux/arm64`.
 
 The `nginx` images run in multi-instance (browser-only) mode, and are meant for local, development, or testing environments.
 
-> [!INFO]
+> [!NOTE]
 > The `nginx` images expose **port 8080**
 
 #### docker run
@@ -157,7 +157,7 @@ networks:
 
 The `node` images run in the secure single instance mode, and are meant for production use. The images are built on top of the official [Docker Hardened Images](https://www.docker.com/products/hardened-images/) (`dhi.io/node:22-alpine`), providing a minimal runtime with near-zero CVEs.
 
-> [!INFO]
+> [!NOTE]
 > The `node` images expose **port 3000** and require the `NUXT_MEILISEARCH_HOST` and `NUXT_MEILISEARCH_API_KEY` runtime variables to be set
 
 #### docker run

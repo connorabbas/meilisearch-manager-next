@@ -1,5 +1,19 @@
 import { getRequestURL, proxyRequest } from 'h3'
 
+/**
+ * WARNING: This catch-all proxy forwards ALL requests to the Meilisearch
+ * instance with the admin API key injected server-side. There is NO
+ * authentication or authorization in this handler.
+ *
+ * This route MUST be protected by external means:
+ * - Traefik Basic Auth (or similar reverse proxy auth)
+ * - VPN / private network
+ * - IP restrictions
+ * - Zero Trust access control
+ *
+ * Exposing this route to the public internet without authentication
+ * grants full admin access to your Meilisearch instance.
+ */
 export default defineEventHandler(async (event) => {
     const config = useRuntimeConfig(event)
     const host = config.meilisearchHost

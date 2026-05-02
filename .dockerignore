@@ -11,6 +11,7 @@
 Dockerfile*
 docker-*.yml
 .dockerignore
+htpasswd
 
 # CI/CD
 .github/

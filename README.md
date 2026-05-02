@@ -119,6 +119,8 @@ docker run -p 3000:8080 \
 
 #### Docker Compose
 
+A simple compose stack to setup a running meilisearch instance and manager UI locally.
+
 ```yml
 services:
   manager:

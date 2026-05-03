@@ -4,7 +4,6 @@ import { useIndexes } from '@/composables/meilisearch/useIndexes'
 import type { KeyCreation } from 'meilisearch'
 import { useToast } from 'primevue'
 import { CircleQuestionMark, Info } from '@lucide/vue'
-import { keyActions } from '@/utils/data'
 
 const drawerOpen = defineModel<boolean>({ default: false })
 
@@ -16,9 +15,6 @@ const { isLoading, createKey } = useKeys()
 
 const indexOptions = computed(() => {
     return (allIndexes.value) ? ['*'] : indexes.value.map((index) => index.uid)
-})
-const actionsOptions = computed(() => {
-    return (allActions.value) ? ['*'] : keyActions
 })
 
 const defaultDate = new Date()
@@ -36,7 +32,30 @@ const emptyKey = {
 const newKey = ref<KeyCreation>(structuredClone(toRaw(emptyKey)))
 const allIndexes = ref(false)
 const allActions = ref(false)
+
+function normalizeStringArray(values?: string[] | null) {
+    return [...new Set((values ?? []).map((value) => value.trim()).filter(Boolean))]
+}
+
+const newKeyActions = computed<string[]>({
+    get: () => newKey.value.actions,
+    set: (actions) => {
+        newKey.value.actions = normalizeStringArray(actions)
+    },
+})
+
+function commitPendingNewKeyAction(event: Event) {
+    const input = event.target
+    if (!(input instanceof HTMLInputElement) || !input.value.trim()) {
+        return
+    }
+
+    newKey.value.actions = normalizeStringArray([...newKey.value.actions, input.value])
+    input.value = ''
+}
+
 function submitNewKey() {
+    newKey.value.actions = normalizeStringArray(newKey.value.actions)
     createKey(newKey.value).then(() => {
         toast.add({
             severity: 'success',
@@ -183,18 +202,15 @@ watch(allActions, (newVal) => {
                         <CircleQuestionMark />
                     </a>
                 </label>
-                <MultiSelect
-                    v-model="newKey.actions"
-                    pt:label:class="flex flex-wrap"
-                    :options="actionsOptions"
-                    :display="allActions ? 'comma' : 'chip'"
-                    placeholder="select permitted actions"
+                <AutoComplete
+                    v-model="newKeyActions"
+                    placeholder="type an action and press Enter"
                     inputId="new-key-actions"
-                    :showToggleAll="false"
                     :disabled="allActions"
-                    :showClear="!allActions"
-                    filter
+                    :typeahead="false"
+                    multiple
                     fluid
+                    @blur="commitPendingNewKeyAction"
                 />
                 <div class="flex items-center gap-2">
                     <Checkbox

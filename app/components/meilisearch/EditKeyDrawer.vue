@@ -4,7 +4,6 @@ import { useIndexes } from '@/composables/meilisearch/useIndexes'
 import type { Key, KeyUpdate } from 'meilisearch'
 import { useToast } from 'primevue'
 import { CircleQuestionMark } from '@lucide/vue'
-import { keyActions } from '@/utils/data'
 
 const props = withDefaults(defineProps<{
     apiKey?: Key | null,
@@ -21,7 +20,6 @@ const { indexes, isFetching: isFetchingIndexes, fetchAllIndexes } = useIndexes()
 const { isLoading, updateKey } = useKeys()
 
 const indexOptions = computed(() => ['*', ...indexes.value.map((index) => index.uid)])
-const actionsOptions = ['*', ...keyActions]
 
 const keyToUpdate = ref<KeyUpdate>({
     name: props.apiKey?.name ?? undefined,
@@ -147,15 +145,13 @@ watch(() => props.apiKey, (newVal: Key | null) => {
                         <CircleQuestionMark />
                     </a>
                 </label>
-                <MultiSelect
+                <AutoComplete
                     :modelValue="props.apiKey.actions"
-                    pt:label:class="flex flex-wrap"
-                    :options="actionsOptions"
-                    display="comma"
-                    placeholder="select permitted actions"
+                    placeholder="permitted actions"
                     inputId="edit-key-actions"
+                    :typeahead="false"
+                    multiple
                     disabled
-                    filter
                     fluid
                 />
             </div>

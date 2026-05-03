@@ -119,6 +119,10 @@ export function useAppLayout() {
         }
     })
 
+    watch(currentPath, () => {
+        mobileMenuOpen.value = false
+    })
+
     return {
         currentRoute,
         menuItems,

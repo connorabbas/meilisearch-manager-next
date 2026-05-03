@@ -72,7 +72,12 @@ export function looksLikeAnImageUrl(value: any) {
     if (!value.startsWith('http')) {
         return false
     }
-    const url = new URL(value)
+    let url: URL
+    try {
+        url = new URL(value)
+    } catch {
+        return false
+    }
     const path = url.pathname.toLowerCase()
 
     const hasImageExtension =

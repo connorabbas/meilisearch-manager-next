@@ -1,4 +1,5 @@
 import { getRequestURL, proxyRequest } from 'h3'
+import { joinURL } from 'ufo'
 
 /**
  * WARNING: This catch-all proxy forwards ALL requests to the Meilisearch
@@ -27,8 +28,11 @@ export default defineEventHandler(async (event) => {
     }
 
     const originalUrl = getRequestURL(event)
-    const proxyPath = originalUrl.pathname.replace(/^\/api\/meilisearch/, '')
-    const targetUrl = new URL(proxyPath, host)
+    const proxyPath = originalUrl.pathname.replace(/^\/api\/meilisearch\/?/, '')
+    if (proxyPath.startsWith('//')) {
+        throw createError({ status: 400, statusMessage: 'Invalid proxy path' })
+    }
+    const targetUrl = new URL(joinURL(host, proxyPath))
     targetUrl.search = originalUrl.search
 
     return proxyRequest(event, targetUrl.toString(), {

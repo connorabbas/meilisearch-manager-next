@@ -169,25 +169,110 @@ networks:
 - Meilisearch relies on its own API key system for external access.
 - The `meili` network is internal-only, isolating direct container-to-container communication.
 
+### Path Prefix Deployments
+
+You can host the Manager and/or Meilisearch under path prefixes on an existing domain instead of using dedicated subdomains.
+
+Example URLs:
+
+- Manager: `https://admin.example.com/manager`
+- Meilisearch: `https://admin.example.com/search`
+
+Path-prefix deployments can involve two separate prefixes:
+
+- `NUXT_APP_BASE_URL=/manager/` tells Nuxt that the Manager app itself is served under `/manager`.
+- `NUXT_MEILISEARCH_HOST=https://admin.example.com/search` tells the Manager proxy that Meilisearch is reachable through a `/search` upstream base path.
+
+Use non-overlapping prefixes, such as `/manager` and `/search`. Avoid pairs like `/meilisearch` and `/meilisearch-manager` unless you explicitly configure Traefik router priorities, because both paths can match the shorter prefix.
+
+#### Manager Under a Path Prefix
+
+When the Manager is served under a prefix, set `NUXT_APP_BASE_URL` to that prefix and do not strip the prefix in Traefik. Nuxt needs to receive the prefixed path so client assets, API calls, and routes resolve correctly.
+
+```yml
+services:
+  manager:
+    image: cabbas23/meilisearch-manager:node-latest
+    container_name: meilisearch-manager
+    environment:
+      NUXT_APP_BASE_URL: /manager/
+      NUXT_MEILISEARCH_HOST: http://meilisearch:7700
+      NUXT_MEILISEARCH_API_KEY: ${MEILISEARCH_MANAGER_API_KEY:?Set MEILISEARCH_MANAGER_API_KEY}
+    labels:
+      - 'traefik.enable=true'
+      - 'traefik.docker.network=traefik_proxy'
+      - 'traefik.http.routers.meilisearch-manager.rule=Host(`admin.example.com`) && PathPrefix(`/manager`)'
+      - 'traefik.http.routers.meilisearch-manager.entrypoints=websecure'
+      - 'traefik.http.routers.meilisearch-manager.tls=true'
+      - 'traefik.http.routers.meilisearch-manager.tls.certresolver=letsencrypt'
+      - 'traefik.http.routers.meilisearch-manager.middlewares=meilisearch-manager-auth'
+      - 'traefik.http.middlewares.meilisearch-manager-auth.basicauth.users=${TRAEFIK_AUTH_USERS}'
+      - 'traefik.http.middlewares.meilisearch-manager-auth.basicauth.removeheader=true'
+      - 'traefik.http.services.meilisearch-manager.loadbalancer.server.port=3000'
+    networks:
+      - proxy
+      - meili
+```
+
+If the Manager and Meilisearch are on the same Docker network, prefer the internal URL for `NUXT_MEILISEARCH_HOST`, such as `http://meilisearch:7700`. This avoids sending Manager-to-Meilisearch traffic out through the public reverse proxy.
+
+#### Meilisearch Under a Path Prefix
+
+If you expose Meilisearch itself under a path prefix, Traefik should strip that prefix before forwarding requests to the Meilisearch container. Meilisearch expects API paths like `/indexes`, not `/search/indexes`.
+
+```yml
+services:
+  meilisearch:
+    image: getmeili/meilisearch:${MEILISEARCH_VERSION:-latest}
+    container_name: meilisearch-instance
+    environment:
+      MEILI_NO_ANALYTICS: ${MEILISEARCH_NO_ANALYTICS:-true}
+      MEILI_MASTER_KEY: ${MEILISEARCH_MASTER_KEY:?Set MEILISEARCH_MASTER_KEY}
+      MEILI_ENV: ${MEILISEARCH_ENV:-production}
+    labels:
+      - 'traefik.enable=true'
+      - 'traefik.docker.network=traefik_proxy'
+      - 'traefik.http.routers.meilisearch-instance.rule=Host(`admin.example.com`) && PathPrefix(`/search`)'
+      - 'traefik.http.routers.meilisearch-instance.entrypoints=websecure'
+      - 'traefik.http.routers.meilisearch-instance.tls=true'
+      - 'traefik.http.routers.meilisearch-instance.tls.certresolver=letsencrypt'
+      - 'traefik.http.routers.meilisearch-instance.middlewares=meilisearch-strip-prefix'
+      - 'traefik.http.middlewares.meilisearch-strip-prefix.stripprefix.prefixes=/search'
+      - 'traefik.http.services.meilisearch-instance.loadbalancer.server.port=7700'
+    networks:
+      - proxy
+      - meili
+```
+
+If the Manager must connect through that public path-prefixed endpoint, set:
+
+```env
+NUXT_MEILISEARCH_HOST=https://admin.example.com/search
+```
+
+The Manager proxy preserves that base path, so a browser request to `/manager/api/meilisearch/indexes` is forwarded by the Manager to `https://admin.example.com/search/indexes`. Traefik then strips `/search` before forwarding to Meilisearch as `/indexes`.
+
 ### Setting Up Traefik Basic Auth
 
 1. Generate a bcrypt password hash using a temporary Docker container:
 
    ```bash
-   docker run --rm -it httpd:alpine htpasswd -nB adminuser
+   docker run --rm -it httpd:alpine htpasswd -nB -C 12 adminuser
    ```
+
+   `-C 12` sets the bcrypt cost. Lower defaults such as cost `05` are functional but not recommended for internet-exposed Basic Auth.
 
    Enter your password when prompted. The output will look like:
 
    ```text
-   adminuser:$2y$05$abcdefghijklmnopqrstuvwxyz...
+   adminuser:$2y$12$abcdefghijklmnopqrstuvwxyz...
    ```
 
 > [!IMPORTANT]
 > Escape `$` characters in Docker Compose. Compose treats `$` as variable interpolation syntax, so every `$` in the bcrypt hash must become `$$` in the label.
 
    ```text
-   adminuser:$2y$05$...  ->  adminuser:$$2y$$05$$...
+   adminuser:$2y$12$...  ->  adminuser:$$2y$$12$$...
    ```
 
 2. Add the user to your compose labels.
@@ -195,13 +280,13 @@ networks:
    For a single user:
 
    ```yml
-   - 'traefik.http.middlewares.meilisearch-manager-auth.basicauth.users=adminuser:$$2y$$05$$...'
+   - 'traefik.http.middlewares.meilisearch-manager-auth.basicauth.users=adminuser:$$2y$$12$$...'
    ```
 
    For multiple users, separate with commas:
 
    ```yml
-   - 'traefik.http.middlewares.meilisearch-manager-auth.basicauth.users=adminuser:$$2y$$05$$...,alice:$$2y$$05$$...'
+   - 'traefik.http.middlewares.meilisearch-manager-auth.basicauth.users=adminuser:$$2y$$12$$...,alice:$$2y$$12$$...'
    ```
 
    Or abstract to an environment variable:

@@ -1,19 +1,20 @@
 <script setup lang="ts">
-import { EllipsisVertical, Funnel, Pencil, Plus, Search, Trash2 } from '@lucide/vue'
-import type { MenuItem } from '@/types'
+import { Astroid, EllipsisVertical, Funnel, Pencil, Plus, Search, Trash2 } from '@lucide/vue'
+import type { IndexEmbedderOption, MenuItem } from '@/types'
 import { useDebounceFn } from '@vueuse/core'
 import { useSearch } from '@/composables/meilisearch/useSearch'
 import { useIndexes } from '@/composables/meilisearch/useIndexes'
 import { useStats } from '@/composables/meilisearch/useStats'
 import { useDocuments } from '@/composables/meilisearch/useDocuments'
 import { useSettings } from '@/composables/meilisearch/useSettings'
-import type { RecordAny } from 'meilisearch'
+import type { Embedder, RecordAny } from 'meilisearch'
 import DocumentHitJsonRow from '@/components/meilisearch/DocumentHitJsonRow.vue'
 import Menu from '@/components/router-link-menus/Menu.vue'
 import ImportDocumentsDrawer from '@/components/meilisearch/ImportDocumentsDrawer.vue'
 import EditDocumentDrawer from '@/components/meilisearch/EditDocumentDrawer.vue'
 import FilterDocumentsDrawer from '@/components/meilisearch/FilterDocumentsDrawer.vue'
 import DocumentsGeoMap from '@/components/meilisearch/DocumentsGeoMap.vue'
+import HybridSearchModal from '@/components/meilisearch/HybridSearchModal.vue'
 import { looksLikeAnImageUrl } from '@/utils'
 
 definePageMeta({
@@ -29,9 +30,11 @@ const { indexStats, fetchIndexStats } = useStats()
 const {
     sortableAttributes,
     filterableAttributes,
+    embedders,
     isFetching: isFetchingSettings,
     fetchSortableAttributes,
     fetchFilterableAttributes,
+    fetchEmbedders,
 } = useSettings()
 const {
     perPage,
@@ -41,6 +44,8 @@ const {
     searchSort,
     searchGeoSort,
     searchFilter,
+    hybridSearchEnabled,
+    hybridSearchConfig,
     isFetching: isSearching,
     searchPaginated,
     handlePageEvent,
@@ -122,6 +127,9 @@ const sortingOptions = computed(() => {
 
 // Filtering
 const showFilteringDrawerOpen = ref(false)
+watch(searchFilter, () => {
+    searchPaginated(indexUid.value, true)
+})
 
 // Create Drawer
 const showImportDocumentsDrawerOpen = ref(false)
@@ -140,6 +148,80 @@ function handleEditDrawerHidden() {
             currentDocument.value = null
         }, 250)
     }
+}
+
+// Hybrid search
+const hybridSearchModalOpen = ref(false)
+function getEmbedderSource(embedder: NonNullable<Embedder>) {
+    if (embedder.source !== 'composite') {
+        return embedder.source
+    }
+
+    return embedder.indexingEmbedder?.source ?? embedder.searchEmbedder?.source ?? embedder.source
+}
+function getEmbedderModel(embedder: NonNullable<Embedder>) {
+    if ('model' in embedder) {
+        return embedder.model
+    }
+
+    if (embedder.source === 'composite') {
+        const indexingEmbedder = embedder.indexingEmbedder
+        const searchEmbedder = embedder.searchEmbedder
+
+        if (indexingEmbedder && 'model' in indexingEmbedder) {
+            return indexingEmbedder.model
+        }
+        if (searchEmbedder && 'model' in searchEmbedder) {
+            return searchEmbedder.model
+        }
+    }
+}
+const availableEmbedders = computed<IndexEmbedderOption[]>(() => {
+    return Object.entries(embedders.value ?? {}).flatMap(([name, settings]) => {
+        if (!settings) {
+            return []
+        }
+
+        const source = getEmbedderSource(settings)
+        const model = getEmbedderModel(settings)
+        const labelDetails = [source, model].filter(Boolean).join(', ')
+
+        return [{
+            name,
+            label: labelDetails ? `${name} (${labelDetails})` : name,
+            settings,
+        }]
+    })
+})
+watch(hybridSearchEnabled, (value) => {
+    if (value) {
+        if (availableEmbedders.value.length > 0) {
+            hybridSearchModalOpen.value = true
+        } else {
+            hybridSearchEnabled.value = false
+        }
+    } else {
+        hybridSearchModalOpen.value = false
+        hybridSearchConfig.value = null
+    }
+})
+watch(hybridSearchConfig, () => {
+    searchPaginated(indexUid.value, true)
+})
+watch(hybridSearchModalOpen, (value) => {
+    if (!value && hybridSearchEnabled.value && !hybridSearchConfig.value) {
+        hybridSearchEnabled.value = false
+    }
+})
+watch(availableEmbedders, (value) => {
+    if (value.length === 0 || !value.some(embedder => embedder.name === hybridSearchConfig.value?.embedder)) {
+        hybridSearchEnabled.value = false
+        hybridSearchConfig.value = null
+        hybridSearchModalOpen.value = false
+    }
+})
+function handleHybridSearchCancel() {
+    hybridSearchEnabled.value = false
 }
 
 // DataTable context Menu
@@ -188,9 +270,7 @@ function handleFieldPopoverHidden() {
     fieldDetail.value = null
 }
 
-watch(searchFilter, () => {
-    searchPaginated(indexUid.value, true)
-})
+// Geo
 watch(searchGeoSort, () => {
     searchPaginated(indexUid.value, true)
 })
@@ -200,8 +280,9 @@ watch(hasGeoView, (value) => {
     }
 })
 
-onMounted(async () => {
-    await Promise.all([
+onMounted(() => {
+    void fetchEmbedders(indexUid.value)
+    void Promise.all([
         fetchSortableAttributes(indexUid.value),
         fetchFilterableAttributes(indexUid.value),
     ])
@@ -247,6 +328,13 @@ onMounted(async () => {
                     :searching="isSearching"
                     :enable-geo-filters="dataView === 'Geo'"
                     :total-hits="searchResults?.estimatedTotalHits"
+                />
+                <HybridSearchModal
+                    v-if="availableEmbedders.length > 0"
+                    v-model:visible="hybridSearchModalOpen"
+                    v-model:hybridSearch="hybridSearchConfig"
+                    :embedders="availableEmbedders"
+                    @cancel="handleHybridSearchCancel"
                 />
             </div>
         </Teleport>
@@ -306,6 +394,17 @@ onMounted(async () => {
                                 <span class="relative inline-flex size-3 rounded-full bg-primary" />
                             </span>
                         </div>
+                        <ToggleButton
+                            v-if="availableEmbedders.length > 0"
+                            v-model="hybridSearchEnabled"
+                            v-tooltip.top="'Hybrid Search'"
+                            onLabel=""
+                            offLabel=""
+                        >
+                            <template #default>
+                                <Astroid />
+                            </template>
+                        </ToggleButton>
                         <div>
                             <SelectButton
                                 v-model="dataView"

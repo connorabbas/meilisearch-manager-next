@@ -1,4 +1,4 @@
-import type { Filter, RecordAny, SearchParams, SearchResponse } from 'meilisearch'
+import type { Filter, HybridSearch, RecordAny, SearchParams, SearchResponse } from 'meilisearch'
 import { useToast } from 'primevue/usetoast'
 import { useMeilisearchStore } from '@/stores/meilisearch'
 import { usePagination } from '@/composables/usePagination'
@@ -20,6 +20,8 @@ export function useSearch(initialPerPage: number = 20) {
     const searchSort = ref<string[]>([])
     const searchGeoSort = ref<string | null>(null)
     const searchFilter = ref<Filter | null>(null)
+    const hybridSearchEnabled = ref(false)
+    const hybridSearchConfig = ref<HybridSearch | null>(null)
 
     const searchSortValues = computed<string[]>(() => {
         const sortValues = [...searchSort.value]
@@ -37,6 +39,7 @@ export function useSearch(initialPerPage: number = 20) {
         return {
             sort: searchSortValues.value.length > 0 ? searchSortValues.value : undefined,
             filter: searchFilter.value ?? undefined,
+            hybrid: hybridSearchConfig.value ?? undefined,
             limit: perPage.value,
             offset: offset.value,
         }
@@ -109,6 +112,8 @@ export function useSearch(initialPerPage: number = 20) {
         searchSort,
         searchGeoSort,
         searchFilter,
+        hybridSearchEnabled,
+        hybridSearchConfig,
         isFetching,
         error,
         searchParams,

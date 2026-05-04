@@ -1,4 +1,4 @@
-import type { FilterableAttributes, SortableAttributes, EnqueuedTask, Settings, Task } from 'meilisearch'
+import type { Embedders, FilterableAttributes, SortableAttributes, EnqueuedTask, Settings, Task } from 'meilisearch'
 import { useToast } from 'primevue/usetoast'
 import { useMeilisearchStore } from '@/stores/meilisearch'
 import { useTasks } from './useTasks'
@@ -11,10 +11,12 @@ export function useSettings() {
     const settings = ref<Settings | null>(null)
     const filterableAttributes = ref<FilterableAttributes | null>(null)
     const sortableAttributes = ref<SortableAttributes | null>(null)
+    const embedders = ref<Embedders>(null)
     const isFetching = reactive({
         allSettings: false,
         filterableAttributes: false,
         sortableAttributes: false,
+        embedders: false,
     })
     const isSendingTask = ref(false)
     const isPollingTask = ref(false)
@@ -88,6 +90,28 @@ export function useSettings() {
         }
     }
 
+    async function fetchEmbedders(uid: string): Promise<Embedders | undefined> {
+        const client = meilisearchStore.getClient()
+        if (!client) {
+            error.value = 'Meilisearch client not connected'
+            return
+        }
+
+        isFetching.embedders = true
+        error.value = null
+
+        try {
+            const results = await client.index(uid).getEmbedders()
+            embedders.value = results
+            return results
+        } catch (err) {
+            embedders.value = null
+            error.value = (err as Error).message
+        } finally {
+            isFetching.embedders = false
+        }
+    }
+
     async function updateSettings(
         uid: string,
         settings: Settings,
@@ -139,6 +163,7 @@ export function useSettings() {
         settings,
         filterableAttributes,
         sortableAttributes,
+        embedders,
         isFetching,
         isSendingTask,
         isPollingTask,
@@ -147,6 +172,7 @@ export function useSettings() {
         fetchSettings,
         fetchFilterableAttributes,
         fetchSortableAttributes,
+        fetchEmbedders,
         updateSettings,
     }
 }

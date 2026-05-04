@@ -219,44 +219,54 @@ watch(geoHits, () => {
 
 <template>
     <div class="relative">
-        <MglMap
-            :key="mapStyleUrl"
-            :map-style="mapStyleUrl"
-            :center="mapCenter"
-            :zoom="mapZoom"
-            :bounds="mapBounds"
-            :fit-bounds-options="{ padding: 48, maxZoom: 14 }"
-            :max-zoom="18"
-            :min-zoom="2"
-            height="560px"
-            class="rounded-xl overflow-hidden border dynamic-border"
-            @map:move="hideDocumentPopover"
-            @map:zoom="hideDocumentPopover"
-        >
-            <MglNavigationControl position="top-right" />
-            <MglScaleControl />
-
-            <MglMarker
-                v-for="geoHit in geoHits"
-                :key="geoHit.key"
-                :coordinates="[geoHit.point.lng, geoHit.point.lat]"
-                anchor="bottom"
+        <div class="relative rounded-xl overflow-hidden border dynamic-border">
+            <MglMap
+                :key="mapStyleUrl"
+                :map-style="mapStyleUrl"
+                :center="mapCenter"
+                :zoom="mapZoom"
+                :bounds="mapBounds"
+                :fit-bounds-options="{ padding: 48, maxZoom: 14 }"
+                :max-zoom="18"
+                :min-zoom="2"
+                height="560px"
+                @map:move="hideDocumentPopover"
+                @map:zoom="hideDocumentPopover"
             >
-                <template #marker>
-                    <button
-                        v-tooltip.top="`View details ${geoHit.key}`"
-                        type="button"
-                        class="inline-flex size-6 -translate-y-1.5 items-center justify-center rounded-full border-2 border-white bg-primary shadow-lg shadow-black/30 transition-transform duration-100 cursor-pointer"
-                        :class="{ '-translate-y-2 scale-110': activeMarkerKey === geoHit.key }"
-                        @mouseenter="handleMarkerHover(geoHit.key)"
-                        @mouseleave="handleMarkerLeave"
-                        @click.stop.prevent="toggleDocumentPopover($event, geoHit.key)"
-                    >
-                        <span class="size-2 rounded-full bg-white" />
-                    </button>
-                </template>
-            </MglMarker>
-        </MglMap>
+                <MglNavigationControl position="top-right" />
+                <MglScaleControl />
+
+                <MglMarker
+                    v-for="geoHit in geoHits"
+                    :key="geoHit.key"
+                    :coordinates="[geoHit.point.lng, geoHit.point.lat]"
+                    anchor="bottom"
+                >
+                    <template #marker>
+                        <button
+                            v-tooltip.top="`View details ${geoHit.key}`"
+                            type="button"
+                            class="inline-flex size-6 -translate-y-1.5 items-center justify-center rounded-full border-2 border-white bg-primary shadow-lg shadow-black/30 transition-transform duration-100 cursor-pointer"
+                            :class="{ '-translate-y-2 scale-110': activeMarkerKey === geoHit.key }"
+                            @mouseenter="handleMarkerHover(geoHit.key)"
+                            @mouseleave="handleMarkerLeave"
+                            @click.stop.prevent="toggleDocumentPopover($event, geoHit.key)"
+                        >
+                            <span class="size-2 rounded-full bg-white" />
+                        </button>
+                    </template>
+                </MglMarker>
+            </MglMap>
+
+            <div
+                v-if="geoHits.length === 0"
+                class="absolute inset-0 flex items-center justify-center p-4 text-center bg-surface-0/90 dark:bg-surface-900/90"
+            >
+                <div class="max-w-[28rem] text-muted-color">
+                    No point coordinates found in this page of results. Documents need `_geo` (or GeoJSON Point) values to be pinned on the map.
+                </div>
+            </div>
+        </div>
 
         <Popover
             ref="document-popover"
@@ -276,13 +286,5 @@ watch(geoHits, () => {
             />
         </Popover>
 
-        <div
-            v-if="geoHits.length === 0"
-            class="absolute inset-0 flex items-center justify-center p-4 text-center bg-surface-0/90 dark:bg-surface-900/90 rounded-xl"
-        >
-            <div class="max-w-[28rem] text-muted-color">
-                No point coordinates found in this page of results. Documents need `_geo` (or GeoJSON Point) values to be pinned on the map.
-            </div>
-        </div>
     </div>
 </template>

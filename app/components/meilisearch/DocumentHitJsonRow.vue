@@ -7,6 +7,7 @@ import ThemedJsonViewer from '../ThemedJsonViewer.vue'
 const props = defineProps<{
     primaryKey?: string,
     hit: Hit,
+    showRankingScore?: boolean,
 }>()
 
 defineEmits(['edit', 'delete'])
@@ -17,6 +18,31 @@ const expandedJson = ref(false)
 function toggleJsonExpanded() {
     expandedJson.value = !expandedJson.value
 }
+
+const rankingScore = computed(() => {
+    return (props.hit as Hit & { _rankingScore?: number })._rankingScore
+})
+
+const rankingScorePercentage = computed(() => {
+    if (rankingScore.value === undefined) return 0
+    return Math.round(rankingScore.value * 100)
+})
+
+const rankingScoreColor = computed(() => {
+    const score = rankingScore.value ?? 0
+    if (score >= 0.7) return 'var(--color-green-500)'
+    if (score >= 0.5) return 'var(--color-yellow-500)'
+    return 'var(--color-red-500)'
+})
+
+const meterValue = computed(() => {
+    if (rankingScore.value === undefined) return []
+    return [{
+        label: 'Ranking Score',
+        value: rankingScorePercentage.value,
+        color: rankingScoreColor.value,
+    }]
+})
 </script>
 
 <template>
@@ -41,8 +67,19 @@ function toggleJsonExpanded() {
                 </div>
                 <div
                     ref="document-json-viewer"
-                    class="grow rounded-lg"
+                    class="grow rounded-lg flex flex-col gap-4"
                 >
+                    <div
+                        v-if="showRankingScore && rankingScore !== undefined"
+                        class="w-full"
+                    >
+                        <MeterGroup
+                            :value="meterValue"
+                            :min="0"
+                            :max="100"
+                            labelPosition="start"
+                        />
+                    </div>
                     <ThemedJsonViewer
                         class="py-2 rounded-lg"
                         :data="props.hit"

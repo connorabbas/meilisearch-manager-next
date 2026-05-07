@@ -22,6 +22,7 @@ export function useSearch(initialPerPage: number = 20) {
     const searchFilter = ref<Filter | null>(null)
     const hybridSearchEnabled = ref(false)
     const hybridSearchConfig = ref<HybridSearch | null>(null)
+    const showRankingScore = ref(false)
 
     const searchSortValues = computed<string[]>(() => {
         const sortValues = [...searchSort.value]
@@ -42,6 +43,7 @@ export function useSearch(initialPerPage: number = 20) {
             hybrid: hybridSearchConfig.value ?? undefined,
             limit: perPage.value,
             offset: offset.value,
+            showRankingScore: showRankingScore.value || undefined,
         }
     })
 
@@ -114,6 +116,7 @@ export function useSearch(initialPerPage: number = 20) {
         searchFilter,
         hybridSearchEnabled,
         hybridSearchConfig,
+        showRankingScore,
         isFetching,
         error,
         searchParams,

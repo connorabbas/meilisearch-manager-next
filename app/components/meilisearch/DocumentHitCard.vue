@@ -64,7 +64,7 @@ const image = computed(() => Object.values(props.hit).find(looksLikeAnImageUrl) 
                 </div>
                 <div
                     ref="document-json-viewer"
-                    class="max-h-[25rem] overflow-y-auto rounded-lg"
+                    class="max-h-[25rem] overflow-y-auto rounded-border"
                 >
                     <ThemedJsonViewer
                         class="py-2"

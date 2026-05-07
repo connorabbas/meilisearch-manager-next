@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Astroid, EllipsisVertical, Funnel, Pencil, Plus, Search, Trash2 } from '@lucide/vue'
+import { Astroid, EllipsisVertical, Funnel, Pencil, Plus, Search, Trash2, Trophy } from '@lucide/vue'
 import type { IndexEmbedderOption, MenuItem } from '@/types'
 import { useDebounceFn } from '@vueuse/core'
 import { useSearch } from '@/composables/meilisearch/useSearch'
@@ -15,7 +15,7 @@ import EditDocumentDrawer from '@/components/meilisearch/EditDocumentDrawer.vue'
 import FilterDocumentsDrawer from '@/components/meilisearch/FilterDocumentsDrawer.vue'
 import DocumentsGeoMap from '@/components/meilisearch/DocumentsGeoMap.vue'
 import HybridSearchModal from '@/components/meilisearch/HybridSearchModal.vue'
-import { looksLikeAnImageUrl } from '@/utils'
+import { looksLikeAnImageUrl, getRankingScoreSeverity } from '@/utils'
 
 definePageMeta({
     layout: 'app',
@@ -46,6 +46,7 @@ const {
     searchFilter,
     hybridSearchEnabled,
     hybridSearchConfig,
+    showRankingScore,
     isFetching: isSearching,
     searchPaginated,
     handlePageEvent,
@@ -405,6 +406,17 @@ onMounted(() => {
                                 <Astroid />
                             </template>
                         </ToggleButton>
+                        <ToggleButton
+                            v-model="showRankingScore"
+                            v-tooltip.top="'Show Ranking Score'"
+                            onLabel=""
+                            offLabel=""
+                            @change="searchPaginated(indexUid, true)"
+                        >
+                            <template #default>
+                                <Trophy />
+                            </template>
+                        </ToggleButton>
                         <div>
                             <SelectButton
                                 v-model="dataView"
@@ -433,7 +445,7 @@ onMounted(() => {
                     <div class="w-auto max-w-[35rem]">
                         <ThemedJsonViewer
                             v-if="fieldDetail && Object.prototype.toString.call(fieldDetail) === '[object Object]'"
-                            class="py-2 rounded-lg max-h-[35rem] overflow-y-auto"
+                            class="py-2 rounded-border max-h-[35rem] overflow-y-auto"
                             :data="fieldDetail"
                             expanded
                             :expandDepth="9999"
@@ -497,7 +509,7 @@ onMounted(() => {
                                 :src="data[fieldName]"
                                 alt="Document Image"
                                 pt:previewMask:class="rounded-xl"
-                                pt:image:class="max-h-20 rounded-lg"
+                                pt:image:class="max-h-20 rounded-border"
                                 preview
                             />
                             <Button
@@ -516,6 +528,20 @@ onMounted(() => {
                             >
                                 <span class="truncate w-auto max-w-[200px]">{{ data[fieldName] }}</span>
                             </Button>
+                        </template>
+                    </Column>
+                    <Column
+                        v-if="showRankingScore"
+                        header="Ranking Score"
+                        frozen
+                        alignFrozen="right"
+                    >
+                        <template #body="{ data }">
+                            <Tag
+                                v-if="data._rankingScore !== undefined"
+                                :value="`${Math.round(data._rankingScore * 100)}%`"
+                                :severity="getRankingScoreSeverity(data._rankingScore)"
+                            />
                         </template>
                     </Column>
                     <Column
@@ -621,6 +647,7 @@ onMounted(() => {
                         <DocumentHitJsonRow
                             :hit
                             :primary-key="primaryKey"
+                            :show-ranking-score="showRankingScore"
                             @edit="editDocument"
                             @delete="handleDeleteDocument"
                         />

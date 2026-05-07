@@ -65,6 +65,13 @@ export function getStatusSeverity(status: string) {
     }
 }
 
+export function getRankingScoreSeverity(score: number): 'success' | 'warn' | 'danger' | 'secondary' {
+    if (score >= 0.7) return 'success'
+    if (score >= 0.5) return 'warn'
+    if (score > 0) return 'danger'
+    return 'secondary'
+}
+
 export function looksLikeAnImageUrl(value: any) {
     if ('string' !== typeof value) {
         return false

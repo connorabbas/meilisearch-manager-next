@@ -107,13 +107,14 @@ watch(() => settings.value, (newVal) => {
                         <template #icon>
                             <TriangleAlert />
                         </template>
-                        <span class="font-bold">Warning:</span> Updating distinct attributes, filterable attributes,
-                        searchable attributes, sortable attributes, and stop words will re-index all the documents
-                        in this index, which can take some time. Reference the
+                        <span class="font-bold">Warning:</span> Updating index settings may enqueue a long-running
+                        task. Changes to searchable, filterable, sortable, ranking, tokenization, language,
+                        or embedder settings can reprocess all documents or regenerate embeddings for this index.
+                        Reference the
                         <a
                             href="https://www.meilisearch.com/docs/reference/api/settings/update-all-settings"
                             target="_blank"
-                            class="text-inherit"
+                            class="text-inherit underline"
                         >
                             settings documentation
                         </a> for more information.

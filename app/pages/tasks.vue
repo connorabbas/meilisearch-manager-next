@@ -307,7 +307,7 @@ onMounted(() => {
                         header="Finished"
                     >
                         <template #body="{ data }">
-                            {{ formatDate((data as Task).finishedAt as string) }}
+                            {{ (data as Task).finishedAt ? formatDate((data as Task).finishedAt as string) : '' }}
                         </template>
                     </Column>
                     <Column

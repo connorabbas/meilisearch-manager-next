@@ -279,7 +279,7 @@ watch(geoHits, () => {
         >
             <ThemedJsonViewer
                 v-if="selectedGeoHit"
-                class="rounded-lg"
+                class="rounded-border"
                 :data="selectedGeoHit.hit"
                 expanded
                 :expandDepth="9999"

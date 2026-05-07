@@ -67,7 +67,7 @@ const meterValue = computed(() => {
                 </div>
                 <div
                     ref="document-json-viewer"
-                    class="grow rounded-lg flex flex-col gap-4"
+                    class="grow rounded-border flex flex-col gap-4"
                 >
                     <div
                         v-if="showRankingScore && rankingScore !== undefined"
@@ -81,7 +81,7 @@ const meterValue = computed(() => {
                         />
                     </div>
                     <ThemedJsonViewer
-                        class="py-2 rounded-lg"
+                        class="py-2 rounded-border"
                         :data="props.hit"
                         :expanded="expandedJson"
                     />

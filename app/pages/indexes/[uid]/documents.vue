@@ -445,7 +445,7 @@ onMounted(() => {
                     <div class="w-auto max-w-[35rem]">
                         <ThemedJsonViewer
                             v-if="fieldDetail && Object.prototype.toString.call(fieldDetail) === '[object Object]'"
-                            class="py-2 rounded-lg max-h-[35rem] overflow-y-auto"
+                            class="py-2 rounded-border max-h-[35rem] overflow-y-auto"
                             :data="fieldDetail"
                             expanded
                             :expandDepth="9999"
@@ -509,7 +509,7 @@ onMounted(() => {
                                 :src="data[fieldName]"
                                 alt="Document Image"
                                 pt:previewMask:class="rounded-xl"
-                                pt:image:class="max-h-20 rounded-lg"
+                                pt:image:class="max-h-20 rounded-border"
                                 preview
                             />
                             <Button

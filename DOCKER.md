@@ -6,7 +6,7 @@ Pre-built Docker images are published to [Docker Hub](https://hub.docker.com/r/c
 
 Meilisearch Manager publishes two image variants:
 
-- `node` images run the secure single-instance mode behind a Nitro server.
+- `node` images run the single-instance proxy mode behind a Nitro server.
 - `nginx` images run the static multi-instance mode as a browser-only app.
 
 Both variants support `linux/amd64` and `linux/arm64`.
@@ -70,9 +70,9 @@ networks:
   meili:
 ```
 
-## Node Image (Secure Single-Instance)
+## Node Image (Single-Instance Proxy)
 
-The `node` images run the secure single-instance mode and are meant for production deployments. The images are built on top of the official [Docker Hardened Images](https://www.docker.com/products/hardened-images/) (`dhi.io/node:22-alpine`), providing a minimal runtime with near-zero CVEs.
+The `node` images run the single-instance proxy mode behind a Nitro server. The images are built on top of the official [Docker Hardened Images](https://www.docker.com/products/hardened-images/) (`dhi.io/node:22-alpine`), providing a minimal runtime with near-zero CVEs.
 
 > [!NOTE]
 > The `node` images expose port `3000` and require the `NUXT_MEILISEARCH_HOST` and `NUXT_MEILISEARCH_API_KEY` runtime variables to be set.
@@ -82,7 +82,7 @@ The `node` images run the secure single-instance mode and are meant for producti
 > [!CAUTION]
 > **The single-instance proxy route has no built-in authentication.** The `/api/meilisearch/*` catch-all proxy injects the admin API key server-side, but the route itself accepts any request that reaches it.
 >
-> **You MUST deploy this behind an authentication layer** (e.g., Traefik Basic Auth, VPN, Cloudflare Access) or restrict it to a private network. Exposing the node image directly to the internet without authentication is equivalent to giving public admin access to your Meilisearch instance.
+> **You MUST deploy this behind an authentication layer in production environments** (e.g., Traefik Basic Auth, VPN, Cloudflare Access) or restrict it to a private network. Exposing the node image directly to the internet without authentication is equivalent to giving public admin access to your Meilisearch instance.
 
 ### Docker Compose
 
@@ -254,78 +254,7 @@ The Manager proxy preserves that base path, so a browser request to `/manager/ap
 
 ### Setting Up Traefik Basic Auth
 
-1. Generate a bcrypt password hash using a temporary Docker container:
-
-   ```bash
-   docker run --rm -it httpd:alpine htpasswd -nB -C 12 adminuser
-   ```
-
-   `-C 12` sets the bcrypt cost. Lower defaults such as cost `05` are functional but not recommended for internet-exposed Basic Auth.
-
-   Enter your password when prompted. The output will look like:
-
-   ```text
-   adminuser:$2y$12$abcdefghijklmnopqrstuvwxyz...
-   ```
-
-> [!IMPORTANT]
-> Escape `$` characters in Docker Compose. Compose treats `$` as variable interpolation syntax, so every `$` in the bcrypt hash must become `$$` in the label.
-
-   ```text
-   adminuser:$2y$12$...  ->  adminuser:$$2y$$12$$...
-   ```
-
-2. Add the user to your compose labels.
-
-   For a single user:
-
-   ```yml
-   - 'traefik.http.middlewares.meilisearch-manager-auth.basicauth.users=adminuser:$$2y$$12$$...'
-   ```
-
-   For multiple users, separate with commas:
-
-   ```yml
-   - 'traefik.http.middlewares.meilisearch-manager-auth.basicauth.users=adminuser:$$2y$$12$$...,alice:$$2y$$12$$...'
-   ```
-
-   Or abstract to an environment variable:
-
-   ```yml
-   - 'traefik.http.middlewares.meilisearch-manager-auth.basicauth.users=${TRAEFIK_AUTH_USERS}'
-   ```
-
-3. Recreate the Manager container after changing Basic Auth users.
-
-   ```shell
-   docker compose up -d --force-recreate manager
-   ```
-
-4. Deploy the stack.
-
-   Traefik reads the inline label and enforces Basic Auth on every request. The browser will prompt for credentials on first visit and cache them for the session.
-
-> [!NOTE]
-> Password hashes are visible in Docker metadata (`docker inspect`) but remain bcrypt-hashed. Treat them as sensitive.
-
-### Replace The Bootstrap Master Key
-
-The compose example separates `MEILISEARCH_MASTER_KEY` from `MEILISEARCH_MANAGER_API_KEY`. The master key is Meilisearch's root credential and should not be used by the Manager for continued production use.
-
-For initial setup, you may temporarily set `MEILISEARCH_MANAGER_API_KEY` to the same value as `MEILISEARCH_MASTER_KEY` so the Manager can start and create keys. After first login, create a dedicated API key for the Manager, replace `MEILISEARCH_MANAGER_API_KEY` with that new key, and recreate the Manager container.
-
-You can create the dedicated key in either of these ways:
-
-- Use the Manager UI's API Keys page after starting once with the bootstrap master key.
-- Use the Meilisearch API directly: [Create an API key](https://www.meilisearch.com/docs/reference/api/keys/create-api-key).
-
-After updating `MEILISEARCH_MANAGER_API_KEY`, recreate the Manager container so the new environment value is loaded:
-
-```shell
-docker compose up -d --force-recreate manager
-```
-
-The dedicated Manager key is still powerful, but it can be revoked or rotated independently without replacing the Meilisearch root credential.
+Check out the [following guide](https://github.com/connorabbas/traefik-docker-compose#setting-up-traefik-basic-auth) on how to setup [BasicAuth](https://doc.traefik.io/traefik/reference/routing-configuration/http/middlewares/basicauth/) middleware for production use.
 
 ### Network-Level Security Alternatives
 

@@ -7,7 +7,7 @@ This project is the refactored Nuxt version of the original Vue SPA project: [co
 ## Features
 
 - :rocket: **Multi-instance** mode for local development and testing
-- :lock: **Secure single-instance** mode for production deployments
+- :lock: **Single-instance** mode with server-side credential proxying
 - :bar_chart: **Dashboard** with stats and version details
 - :open_file_folder: **Indexes** listing, creation, inspection, primary key updates, and deletion
 - :gear: **Index settings** full JSON viewer/editor
@@ -46,14 +46,7 @@ In this mode, the app behaves as a pure client-side SPA. You can add, manage, an
 > [!NOTE]
 > Credentials in `localStorage` are isolated to the browser and the app's origin. They are not transmitted to any server. This is generally safe for development and testing, but may not meet organizational security requirements for production use.
 
-### Secure Single-Instance Mode (Production)
-
-Designed for **production deployments** where you want to manage a single Meilisearch instance without exposing admin credentials to the browser.
-
-> [!CAUTION]
-> **The single-instance proxy route has no built-in authentication.** The `/api/meilisearch/*` catch-all proxy injects the admin API key server-side, but the route itself accepts any request that reaches it.
->
-> **You MUST deploy this behind an authentication layer** (e.g., Traefik Basic Auth, VPN, Cloudflare Access) or restrict it to a private network. Exposing the node image directly to the internet without authentication is equivalent to giving public admin access to your Meilisearch instance.
+### Single-Instance Mode
 
 In this mode, the app runs behind a Nitro server. The admin API key lives only in server-side environment variables. All Meilisearch requests are transparently proxied through the app's backend, which injects the real credentials server-side.
 
@@ -71,6 +64,11 @@ NUXT_MEILISEARCH_API_KEY=yourAdminApiKey
 - **Requires a running Nitro server (Node environment)** - cannot be used with static hosting
 
 **Typical deployment:** Host the app alongside your Meilisearch instance (same network/VPC, or behind the same reverse proxy) so the Nitro server can reach Meilisearch securely.
+
+> [!CAUTION]
+> **The single-instance proxy route has no built-in authentication.** The `/api/meilisearch/*` catch-all proxy injects the admin API key server-side, but the route itself accepts any request that reaches it.
+>
+> **You MUST deploy this behind an authentication layer in production environments** (e.g., Traefik Basic Auth, VPN, Cloudflare Access) or restrict it to a private network. Exposing the app directly to the internet without authentication is equivalent to giving public admin access to your Meilisearch instance.
 
 ### Explicit Mode Control
 

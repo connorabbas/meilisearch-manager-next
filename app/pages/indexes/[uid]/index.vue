@@ -146,21 +146,6 @@ const fetching = computed(() => fetchingIndexData.value || fetchingStatsData.val
                     </Card>
                 </div>
                 <div
-                    v-if="currentIndex.updatedAt"
-                    class="col-span-2 sm:col-span-1"
-                >
-                    <Card class="h-full">
-                        <template #subtitle>
-                            Last Updated
-                        </template>
-                        <template #content>
-                            <div class="flex gap-3 items-center text-xl font-semibold">
-                                <Clock class="size-6!" /> {{ formatDate(currentIndex.updatedAt) }}
-                            </div>
-                        </template>
-                    </Card>
-                </div>
-                <div
                     v-if="currentIndex.createdAt"
                     class="col-span-2 sm:col-span-1"
                 >
@@ -171,6 +156,21 @@ const fetching = computed(() => fetchingIndexData.value || fetchingStatsData.val
                         <template #content>
                             <div class="flex gap-3 items-center text-xl font-semibold">
                                 <Clock class="size-6!" /> {{ formatDate(currentIndex.createdAt) }}
+                            </div>
+                        </template>
+                    </Card>
+                </div>
+                <div
+                    v-if="currentIndex.updatedAt"
+                    class="col-span-2 sm:col-span-1"
+                >
+                    <Card class="h-full">
+                        <template #subtitle>
+                            Last Updated
+                        </template>
+                        <template #content>
+                            <div class="flex gap-3 items-center text-xl font-semibold">
+                                <Clock class="size-6!" /> {{ formatDate(currentIndex.updatedAt) }}
                             </div>
                         </template>
                     </Card>

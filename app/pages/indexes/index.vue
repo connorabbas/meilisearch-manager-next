@@ -5,6 +5,7 @@ import PageTitleSection from '@/components/PageTitleSection.vue'
 import { useIndexes } from '@/composables/meilisearch/useIndexes'
 import CreateIndexDrawer from '@/components/meilisearch/CreateIndexDrawer.vue'
 import NotFoundMessage from '@/components/NotFoundMessage.vue'
+import { formatNumber } from '@/utils'
 //import { formatDate } from '@/utils';
 //import { Index } from 'meilisearch';
 
@@ -129,7 +130,11 @@ const indexesData = computed(() => {
                         <Column
                             field="numberOfDocuments"
                             header="Documents"
-                        />
+                        >
+                            <template #body="{ data }">
+                                {{ formatNumber(data.numberOfDocuments) }}
+                            </template>
+                        </Column>
                         <!-- <Column
                         field="createdAt"
                         header="Created"

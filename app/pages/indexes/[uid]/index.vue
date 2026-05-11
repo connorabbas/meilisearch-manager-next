@@ -3,6 +3,7 @@ import { Brain, Clock, Database, FileCheck, FileText } from '@lucide/vue'
 import FieldDistributionChart from '@/components/meilisearch/FieldDistributionChart.vue'
 import { useIndexes } from '@/composables/meilisearch/useIndexes'
 import { useStats } from '@/composables/meilisearch/useStats'
+import { formatNumber } from '@/utils'
 
 definePageMeta({
     layout: 'app',
@@ -103,7 +104,7 @@ const fetching = computed(() => fetchingIndexData.value || fetchingStatsData.val
                         </template>
                         <template #content>
                             <div class="flex gap-3 items-center text-2xl font-semibold">
-                                <FileText class="size-6!" /> {{ indexStats.numberOfDocuments?.toLocaleString() || 0 }}
+                                <FileText class="size-6!" /> {{ formatNumber(indexStats.numberOfDocuments || 0) }}
                             </div>
                         </template>
                     </Card>
@@ -127,7 +128,7 @@ const fetching = computed(() => fetchingIndexData.value || fetchingStatsData.val
                         </template>
                         <template #content>
                             <div class="flex gap-3 items-center text-2xl font-semibold">
-                                <Brain class="size-6!" /> {{ indexStats.numberOfEmbeddings?.toLocaleString() || 0 }}
+                                <Brain class="size-6!" /> {{ formatNumber(indexStats.numberOfEmbeddings || 0) }}
                             </div>
                         </template>
                     </Card>
@@ -139,8 +140,7 @@ const fetching = computed(() => fetchingIndexData.value || fetchingStatsData.val
                         </template>
                         <template #content>
                             <div class="flex gap-3 items-center text-2xl font-semibold">
-                                <FileCheck class="size-6!" /> {{ indexStats.numberOfEmbeddedDocuments?.toLocaleString()
-                                    || 0 }}
+                                <FileCheck class="size-6!" /> {{ formatNumber(indexStats.numberOfEmbeddedDocuments || 0) }}
                             </div>
                         </template>
                     </Card>

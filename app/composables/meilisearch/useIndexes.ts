@@ -1,4 +1,4 @@
-import type { RecordAny, EnqueuedTask, Index, IndexesQuery, IndexesResults, IndexOptions, Task } from 'meilisearch'
+import type { RecordAny, EnqueuedTask, Index, IndexesQuery, IndexesResults, IndexOptions, IndexObject, Task } from 'meilisearch'
 import { useToast } from 'primevue/usetoast'
 import { useConfirm } from 'primevue/useconfirm'
 import { useMeilisearchStore } from '@/stores/meilisearch'
@@ -19,8 +19,8 @@ export function useIndexes(initialPerPage: number = 20) {
     } = usePagination(initialPerPage)
     const { pollTaskStatus } = useTasks()
 
-    const indexesResults = ref<IndexesResults<Index[]> | null>(null)
-    const indexes = ref<Index[]>([])
+    const indexesResults = ref<IndexesResults<IndexObject[]> | null>(null)
+    const indexes = ref<IndexObject[]>([])
     const currentIndex = ref<Index | null>(null)
     const isFetching = ref(false)
     const isSendingTask = ref(false)
@@ -35,7 +35,7 @@ export function useIndexes(initialPerPage: number = 20) {
         }
     })
 
-    async function fetchIndexes(params?: IndexesQuery): Promise<IndexesResults<Index[]> | undefined> {
+    async function fetchIndexes(params?: IndexesQuery): Promise<IndexesResults<IndexObject[]> | undefined> {
         const client = meilisearchStore.getClient()
         if (!client) {
             error.value = 'Meilisearch client not connected'
@@ -46,7 +46,7 @@ export function useIndexes(initialPerPage: number = 20) {
         error.value = null
 
         try {
-            const results = await client.getIndexes(params)
+            const results = await client.getRawIndexes(params)
             indexesResults.value = results
             indexes.value = results.results
 
@@ -60,7 +60,7 @@ export function useIndexes(initialPerPage: number = 20) {
         }
     }
 
-    async function fetchIndexesPaginated(resetPagination: boolean = false): Promise<IndexesResults<Index[]> | undefined> {
+    async function fetchIndexesPaginated(resetPagination: boolean = false): Promise<IndexesResults<IndexObject[]> | undefined> {
         if (resetPagination) {
             currentPage.value = 1
         }

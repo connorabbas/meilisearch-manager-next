@@ -1,11 +1,13 @@
 <script setup lang="ts">
-import { Clock, Database, FileText, RefreshCw } from '@lucide/vue'
+import { Brain, Clock, Database, FileCheck, FileText } from '@lucide/vue'
+import FieldDistributionChart from '@/components/meilisearch/FieldDistributionChart.vue'
 import { useIndexes } from '@/composables/meilisearch/useIndexes'
 import { useStats } from '@/composables/meilisearch/useStats'
+import { formatNumber } from '@/utils'
 
 definePageMeta({
     layout: 'app',
-    title: 'Index Info',
+    title: 'Index Stats',
 })
 
 const route = useRoute()
@@ -30,19 +32,10 @@ const fetching = computed(() => fetchingIndexData.value || fetchingStatsData.val
 <template>
     <div class="flex flex-col gap-4 md:gap-8">
         <Teleport to="#index-page-actions">
-            <Button
-                label="Refresh"
-                severity="secondary"
+            <RefreshButton
                 :loading="fetching"
                 @click="fetchData"
-            >
-                <template #icon>
-                    <RefreshCw />
-                </template>
-                <template #loadingicon>
-                    <RefreshCw class="animate-spin" />
-                </template>
-            </Button>
+            />
         </Teleport>
 
         <Message
@@ -57,17 +50,43 @@ const fetching = computed(() => fetchingIndexData.value || fetchingStatsData.val
             v-if="fetching"
             class="grid grid-cols-12 items-stretch gap-4"
         >
-            <div
-                v-for="card in 4"
-                :key="card"
-                class="col-span-12 sm:col-span-6 lg:col-span-3"
-            >
+            <div class="col-span-12 md:col-span-6 grid grid-cols-2 gap-4 content-start">
+                <div
+                    v-for="card in 6"
+                    :key="card"
+                    class="col-span-2 sm:col-span-1"
+                >
+                    <Card class="h-full">
+                        <template #subtitle>
+                            <Skeleton
+                                width="7rem"
+                                height="1rem"
+                            />
+                        </template>
+                        <template #content>
+                            <Skeleton
+                                width="100%"
+                                height="2rem"
+                            />
+                        </template>
+                    </Card>
+                </div>
+            </div>
+            <div class="col-span-12 md:col-span-6">
                 <Card class="h-full">
-                    <template #subtitle>
-                        <Skeleton width="7rem" height="1rem" />
+                    <template #title>
+                        <Skeleton
+                            width="10rem"
+                            height="1.5rem"
+                        />
                     </template>
                     <template #content>
-                        <Skeleton width="100%" height="2rem" />
+                        <div class="flex justify-center items-center h-64">
+                            <Skeleton
+                                shape="circle"
+                                size="16rem"
+                            />
+                        </div>
                     </template>
                 </Card>
             </div>
@@ -77,57 +96,94 @@ const fetching = computed(() => fetchingIndexData.value || fetchingStatsData.val
             v-else-if="currentIndex && indexStats"
             class="grid grid-cols-12 items-stretch gap-4"
         >
-            <div class="col-span-12 sm:col-span-6 lg:col-span-3">
-                <Card class="h-full">
-                    <template #subtitle>
-                        Total Documents
-                    </template>
-                    <template #content>
-                        <div class="flex gap-3 items-center text-2xl font-semibold">
-                            <FileText class="size-6!" /> {{ indexStats.numberOfDocuments?.toLocaleString() || 0 }}
-                        </div>
-                    </template>
-                </Card>
+            <div class="col-span-12 md:col-span-6 grid grid-cols-2 gap-4 content-start">
+                <div class="col-span-2 sm:col-span-1">
+                    <Card class="h-full">
+                        <template #subtitle>
+                            Total Documents
+                        </template>
+                        <template #content>
+                            <div class="flex gap-3 items-center text-2xl font-semibold">
+                                <FileText class="size-6!" /> {{ formatNumber(indexStats.numberOfDocuments || 0) }}
+                            </div>
+                        </template>
+                    </Card>
+                </div>
+                <div class="col-span-2 sm:col-span-1">
+                    <Card class="h-full">
+                        <template #subtitle>
+                            Index Size
+                        </template>
+                        <template #content>
+                            <div class="flex gap-3 items-center text-2xl font-semibold">
+                                <Database class="size-6!" /> {{ formatBytes(indexStats.rawDocumentDbSize || 0) }}
+                            </div>
+                        </template>
+                    </Card>
+                </div>
+                <div class="col-span-2 sm:col-span-1">
+                    <Card class="h-full">
+                        <template #subtitle>
+                            Total Embeddings
+                        </template>
+                        <template #content>
+                            <div class="flex gap-3 items-center text-2xl font-semibold">
+                                <Brain class="size-6!" /> {{ formatNumber(indexStats.numberOfEmbeddings || 0) }}
+                            </div>
+                        </template>
+                    </Card>
+                </div>
+                <div class="col-span-2 sm:col-span-1">
+                    <Card class="h-full">
+                        <template #subtitle>
+                            Embedded Documents
+                        </template>
+                        <template #content>
+                            <div class="flex gap-3 items-center text-2xl font-semibold">
+                                <FileCheck class="size-6!" /> {{ formatNumber(indexStats.numberOfEmbeddedDocuments || 0) }}
+                            </div>
+                        </template>
+                    </Card>
+                </div>
+                <div
+                    v-if="currentIndex.createdAt"
+                    class="col-span-2 sm:col-span-1"
+                >
+                    <Card class="h-full">
+                        <template #subtitle>
+                            Created
+                        </template>
+                        <template #content>
+                            <div class="flex gap-3 items-center text-xl font-semibold">
+                                <Clock class="size-6!" /> {{ formatDate(currentIndex.createdAt) }}
+                            </div>
+                        </template>
+                    </Card>
+                </div>
+                <div
+                    v-if="currentIndex.updatedAt"
+                    class="col-span-2 sm:col-span-1"
+                >
+                    <Card class="h-full">
+                        <template #subtitle>
+                            Last Updated
+                        </template>
+                        <template #content>
+                            <div class="flex gap-3 items-center text-xl font-semibold">
+                                <Clock class="size-6!" /> {{ formatDate(currentIndex.updatedAt) }}
+                            </div>
+                        </template>
+                    </Card>
+                </div>
             </div>
-            <div class="col-span-12 sm:col-span-6 lg:col-span-3">
+
+            <div class="col-span-12 md:col-span-6">
                 <Card class="h-full">
-                    <template #subtitle>
-                        Index Size
+                    <template #title>
+                        Field Distribution
                     </template>
                     <template #content>
-                        <div class="flex gap-3 items-center text-2xl font-semibold">
-                            <Database class="size-6!" /> {{ formatBytes(indexStats.rawDocumentDbSize || 0) }}
-                        </div>
-                    </template>
-                </Card>
-            </div>
-            <div
-                v-if="currentIndex.updatedAt"
-                class="col-span-12 sm:col-span-6 lg:col-span-3"
-            >
-                <Card class="h-full">
-                    <template #subtitle>
-                        Last Updated
-                    </template>
-                    <template #content>
-                        <div class="flex gap-3 items-center text-xl font-semibold">
-                            <Clock class="size-6!" /> {{ formatDate(currentIndex.updatedAt) }}
-                        </div>
-                    </template>
-                </Card>
-            </div>
-            <div
-                v-if="currentIndex.createdAt"
-                class="col-span-12 sm:col-span-6 lg:col-span-3"
-            >
-                <Card class="h-full">
-                    <template #subtitle>
-                        Created
-                    </template>
-                    <template #content>
-                        <div class="flex gap-3 items-center text-xl font-semibold">
-                            <Clock class="size-6!" /> {{ formatDate(currentIndex.createdAt) }}
-                        </div>
+                        <FieldDistributionChart :field-distribution="indexStats.fieldDistribution" />
                     </template>
                 </Card>
             </div>

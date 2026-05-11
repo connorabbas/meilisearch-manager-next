@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { FileText, Info, Pencil, Settings } from '@lucide/vue'
+import { ChartPie, FileText, Pencil, Settings } from '@lucide/vue'
 
 const props = defineProps<{
     currentPath: string,
@@ -7,7 +7,7 @@ const props = defineProps<{
 }>()
 
 const items = computed(() => [
-    { to: `/indexes/${props.indexUid}`, value: 'details', label: 'Info', icon: Info },
+    { to: `/indexes/${props.indexUid}`, value: 'details', label: 'Stats', icon: ChartPie },
     { to: `/indexes/${props.indexUid}/documents`, value: 'documents', label: 'Documents', icon: FileText },
     { to: `/indexes/${props.indexUid}/settings`, value: 'settings', label: 'Settings', icon: Settings },
     { to: `/indexes/${props.indexUid}/edit`, value: 'edit', label: 'Edit', icon: Pencil },

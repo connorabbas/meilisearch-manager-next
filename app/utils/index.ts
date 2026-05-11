@@ -16,6 +16,10 @@ export const ptViewMerge = (
     }
 }
 
+export const formatNumber = (num: number): string => {
+    return num.toLocaleString('en-US')
+}
+
 export const formatDate = (date: Date | string): string => {
     return new Date(date).toLocaleDateString('en-US', {
         year: 'numeric',

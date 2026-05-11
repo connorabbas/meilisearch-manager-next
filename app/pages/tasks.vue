@@ -2,7 +2,7 @@
 import { useInfiniteScroll, useIntervalFn, useStorage } from '@vueuse/core'
 import { useTasks } from '@/composables/meilisearch/useTasks'
 import { useIndexes } from '@/composables/meilisearch/useIndexes'
-import { Home, Info, RefreshCw } from '@lucide/vue'
+import { Home, Info } from '@lucide/vue'
 import type { Task, TasksOrBatchesQuery } from 'meilisearch'
 import { Mode } from 'vanilla-jsoneditor'
 import { formatDate, getStatusSeverity } from '@/utils'
@@ -154,19 +154,10 @@ onMounted(() => {
                         />
                     </div>
                     <div>
-                        <Button
-                            severity="secondary"
-                            label="Refresh"
+                        <RefreshButton
                             :loading="isFetchingTasks"
                             @click="refreshTasksList()"
-                        >
-                            <template #icon>
-                                <RefreshCw />
-                            </template>
-                            <template #loadingicon>
-                                <RefreshCw class="animate-spin" />
-                            </template>
-                        </Button>
+                        />
                     </div>
                     <div>
                         <InputGroup>

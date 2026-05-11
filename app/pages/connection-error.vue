@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useMeilisearchStore } from '@/stores/meilisearch'
-import { CircleX, RefreshCw } from '@lucide/vue'
+import { CircleX } from '@lucide/vue'
 
 definePageMeta({
     layout: 'app',
@@ -50,18 +50,11 @@ async function retryConnection() {
                     </Message>
 
                     <div class="flex flex-wrap items-center justify-center gap-3">
-                        <Button
+                        <RefreshButton
                             label="Retry Connection"
                             :loading="meilisearchStore.isConnecting"
                             @click="retryConnection"
-                        >
-                            <template #icon>
-                                <RefreshCw />
-                            </template>
-                            <template #loadingicon>
-                                <RefreshCw class="animate-spin" />
-                            </template>
-                        </Button>
+                        />
                     </div>
                 </section>
             </div>

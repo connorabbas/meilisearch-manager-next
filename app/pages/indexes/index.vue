@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useStats } from '@/composables/meilisearch/useStats'
-import { ArrowRight, Home, Plus, RefreshCw } from '@lucide/vue'
+import { ArrowRight, Home, Plus } from '@lucide/vue'
 import PageTitleSection from '@/components/PageTitleSection.vue'
 import { useIndexes } from '@/composables/meilisearch/useIndexes'
 import CreateIndexDrawer from '@/components/meilisearch/CreateIndexDrawer.vue'
@@ -60,19 +60,10 @@ const indexesData = computed(() => {
             </template>
             <template #end>
                 <div class="flex gap-4">
-                    <Button
-                        severity="secondary"
-                        label="Refresh"
+                    <RefreshButton
                         :loading="isFetchingIndexes || isFetchingStats"
                         @click="fetchData"
-                    >
-                        <template #icon>
-                            <RefreshCw />
-                        </template>
-                        <template #loadingicon>
-                            <RefreshCw class="animate-spin" />
-                        </template>
-                    </Button>
+                    />
                     <Button
                         label="New Index"
                         @click="createIndexDrawerOpen = true"

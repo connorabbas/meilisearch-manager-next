@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Brain, Clock, Database, FileCheck, FileText, RefreshCw } from '@lucide/vue'
+import { Brain, Clock, Database, FileCheck, FileText } from '@lucide/vue'
 import FieldDistributionChart from '@/components/meilisearch/FieldDistributionChart.vue'
 import { useIndexes } from '@/composables/meilisearch/useIndexes'
 import { useStats } from '@/composables/meilisearch/useStats'
@@ -31,19 +31,10 @@ const fetching = computed(() => fetchingIndexData.value || fetchingStatsData.val
 <template>
     <div class="flex flex-col gap-4 md:gap-8">
         <Teleport to="#index-page-actions">
-            <Button
-                label="Refresh"
-                severity="secondary"
+            <RefreshButton
                 :loading="fetching"
                 @click="fetchData"
-            >
-                <template #icon>
-                    <RefreshCw />
-                </template>
-                <template #loadingicon>
-                    <RefreshCw class="animate-spin" />
-                </template>
-            </Button>
+            />
         </Teleport>
 
         <Message

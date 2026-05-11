@@ -6,7 +6,7 @@ import { useStats } from '@/composables/meilisearch/useStats'
 
 definePageMeta({
     layout: 'app',
-    title: 'Index Info',
+    title: 'Index Stats',
 })
 
 const route = useRoute()

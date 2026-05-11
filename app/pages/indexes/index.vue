@@ -5,9 +5,7 @@ import PageTitleSection from '@/components/PageTitleSection.vue'
 import { useIndexes } from '@/composables/meilisearch/useIndexes'
 import CreateIndexDrawer from '@/components/meilisearch/CreateIndexDrawer.vue'
 import NotFoundMessage from '@/components/NotFoundMessage.vue'
-import { formatNumber } from '@/utils'
-//import { formatDate } from '@/utils';
-//import { Index } from 'meilisearch';
+import { formatNumber, formatDate } from '@/utils'
 
 definePageMeta({
     layout: 'app',
@@ -135,23 +133,22 @@ const indexesData = computed(() => {
                                 {{ formatNumber(data.numberOfDocuments) }}
                             </template>
                         </Column>
-                        <!-- <Column
-                        field="createdAt"
-                        header="Created"
-                    >
-                        <template #body="{ data }">
-                            {{ data }}
-                            {{ formatDate((data as Index).createdAt as Date) }}
-                        </template>
-                    </Column>
-                    <Column
-                        field="updatedAt"
-                        header="Updated"
-                    >
-                        <template #body="{ data }">
-                            {{ formatDate((data as Index).updatedAt as Date) }}
-                        </template>
-                    </Column> -->
+                        <Column
+                            field="createdAt"
+                            header="Created"
+                        >
+                            <template #body="{ data }">
+                                {{ formatDate(data.createdAt) }}
+                            </template>
+                        </Column>
+                        <Column
+                            field="updatedAt"
+                            header="Updated"
+                        >
+                            <template #body="{ data }">
+                                {{ formatDate(data.updatedAt) }}
+                            </template>
+                        </Column>
                         <Column
                             header="Action"
                             frozen

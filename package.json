@@ -19,6 +19,7 @@
         "@primeuix/themes": "^2.0.3",
         "@primevue/forms": "^4.5.4",
         "@vueuse/core": "^14.2.1",
+        "chart.js": "^4.5.1",
         "json-editor-vue": "^0.18.1",
         "meilisearch": "^0.57.0",
         "nuxt": "^4.4.2",

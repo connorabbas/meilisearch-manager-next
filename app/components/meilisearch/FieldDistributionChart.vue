@@ -96,9 +96,11 @@ const chartOptions = computed(() => {
     const textColor = isDark.value ? '#e5e7eb' : '#374151'
 
     return {
+        responsive: true,
+        maintainAspectRatio: false,
         plugins: {
             legend: {
-                position: 'right',
+                position: 'bottom',
                 labels: {
                     usePointStyle: true,
                     color: textColor,
@@ -130,7 +132,7 @@ onMounted(() => {
             type="doughnut"
             :data="chartData"
             :options="chartOptions"
-            class="w-full max-w-lg"
+            class="w-full h-96"
         />
     </div>
     <div

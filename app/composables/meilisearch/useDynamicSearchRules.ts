@@ -2,7 +2,7 @@ import { useToast } from 'primevue/usetoast'
 import { useConfirm } from 'primevue/useconfirm'
 import { useMeilisearchStore } from '@/stores/meilisearch'
 import { usePagination } from '../usePagination'
-import type { SearchRule, SearchRuleListPayload, ResourceResults, SearchRuleUpdatePayload } from 'meilisearch'
+import type { SearchRule, SearchRuleListPayload, SearchRuleListFilterPayload, ResourceResults, SearchRuleUpdatePayload } from 'meilisearch'
 
 export function useDynamicSearchRules(initialPerPage: number = 20) {
     const toast = useToast()
@@ -23,11 +23,21 @@ export function useDynamicSearchRules(initialPerPage: number = 20) {
     const isFetching = ref(false)
     const isLoading = ref(false)
     const error = ref<string | null>(null)
+    const searchQuery = ref('')
+    const activeFilter = ref<boolean | null>(null)
 
     const rulesQuery = computed<SearchRuleListPayload>(() => {
+        const filter: SearchRuleListFilterPayload = {}
+        if (searchQuery.value.trim()) {
+            filter.attributePatterns = [`*${searchQuery.value.trim()}*`]
+        }
+        if (activeFilter.value !== null) {
+            filter.active = activeFilter.value
+        }
         return {
             limit: perPage.value,
             offset: offset.value,
+            filter: Object.keys(filter).length > 0 ? filter : null,
         }
     })
 
@@ -191,6 +201,8 @@ export function useDynamicSearchRules(initialPerPage: number = 20) {
         isFetching,
         isLoading,
         error,
+        searchQuery,
+        activeFilter,
         handlePageEvent,
         fetchRules,
         fetchRulesPaginated,

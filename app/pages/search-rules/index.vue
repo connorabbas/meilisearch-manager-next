@@ -5,7 +5,8 @@ import { useStats } from '@/composables/meilisearch/useStats'
 import Menu from '@/components/router-link-menus/Menu.vue'
 import PageTitleSection from '@/components/PageTitleSection.vue'
 import { isVersionAtLeast } from '@/utils'
-import { Home, Plus, Pencil, Trash2, EllipsisVertical } from '@lucide/vue'
+import { Home, Plus, Pencil, Trash2, EllipsisVertical, Search } from '@lucide/vue'
+import { useDebounceFn } from '@vueuse/core'
 import { useToast } from 'primevue/usetoast'
 import type { SearchRule } from 'meilisearch'
 import type { MenuItem } from '@/types'
@@ -24,6 +25,8 @@ const {
     rules,
     rulesResults,
     isFetching: isFetchingRules,
+    searchQuery,
+    activeFilter,
     fetchRulesPaginated,
     handlePageEvent,
     confirmDeleteRule,
@@ -61,6 +64,24 @@ if (isFeatureAvailable.value) {
 function editRule(rule: SearchRule) {
     navigateTo(`/search-rules/${rule.uid}/edit`)
 }
+
+const activeFilterOptions = [
+    { label: 'All', value: null },
+    { label: 'Active', value: true },
+    { label: 'Inactive', value: false },
+]
+
+const debouncedSearch = useDebounceFn(() => {
+    fetchRulesPaginated(true)
+}, 300)
+
+watch(searchQuery, () => {
+    debouncedSearch()
+})
+
+watch(activeFilter, () => {
+    fetchRulesPaginated(true)
+})
 
 const contextMenu = useTemplateRef('rule-context-menu')
 const contextMenuItems = ref<MenuItem[]>([])
@@ -146,6 +167,7 @@ function toggleContextMenu(event: Event, rule: SearchRule) {
                     :first="firstDatasetIndex"
                     :totalRecords="rulesResults?.total"
                     :rowsPerPageOptions="[20, 50, 100]"
+                    filter-display="row"
                     :pt="{
                         tableContainer: {
                             id: 'search-rules-data-table-container'
@@ -166,13 +188,32 @@ function toggleContextMenu(event: Event, rule: SearchRule) {
                     <Column
                         field="uid"
                         header="UID"
-                    />
+                        :show-filter-menu="false"
+                    >
+                        <template #filter>
+                            <IconField>
+                                <InputIcon>
+                                    <Search class="size-4" />
+                                </InputIcon>
+                                <InputText
+                                    v-model="searchQuery"
+                                    placeholder="Search by name..."
+                                    fluid
+                                />
+                            </IconField>
+                        </template>
+                    </Column>
                     <Column
                         field="description"
                         header="Description"
                     >
                         <template #body="{ data }">
-                            <span v-if="(data as SearchRule).description">{{ (data as SearchRule).description }}</span>
+                            <span
+                                v-if="(data as SearchRule).description"
+                                class="truncate inline-block max-w-[300px]"
+                            >
+                                {{ (data as SearchRule).description }}
+                            </span>
                         </template>
                     </Column>
                     <Column
@@ -185,8 +226,20 @@ function toggleContextMenu(event: Event, rule: SearchRule) {
                     </Column>
                     <Column
                         field="active"
-                        header="Active"
+                        header="Status"
+                        :show-filter-menu="false"
                     >
+                        <template #filter>
+                            <Select
+                                v-model="activeFilter"
+                                :options="activeFilterOptions"
+                                option-label="label"
+                                option-value="value"
+                                placeholder="Status"
+                                show-clear
+                                fluid
+                            />
+                        </template>
                         <template #body="{ data }">
                             <Tag
                                 :value="(data as SearchRule).active ? 'Active' : 'Inactive'"
@@ -194,18 +247,23 @@ function toggleContextMenu(event: Event, rule: SearchRule) {
                             />
                         </template>
                     </Column>
-                    <Column header="Conditions">
+                    <Column
+                        field="conditions"
+                        header="Conditions"
+                    >
                         <template #body="{ data }">
                             {{ (data as SearchRule).conditions?.length ?? 0 }}
                         </template>
                     </Column>
-                    <Column header="Actions">
+                    <Column
+                        field="actions"
+                        header="Actions"
+                    >
                         <template #body="{ data }">
                             {{ (data as SearchRule).actions?.length ?? 0 }}
                         </template>
                     </Column>
                     <Column
-                        header="Action"
                         frozen
                         align-frozen="right"
                     >

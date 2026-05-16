@@ -8,7 +8,7 @@ const drawerOpen = defineModel<boolean>({ default: false })
 
 const props = defineProps<{
     apiKey: Key,
-    copiedKeyUid: string,
+    copiedKeyUid: string | null,
 }>()
 
 defineEmits(['hide', 'copy-key'])

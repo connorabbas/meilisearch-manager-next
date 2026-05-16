@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { AlertCircle } from '@lucide/vue'
-import { useColorMode } from '@vueuse/core'
 import 'vue3-json-viewer/dist/vue3-json-viewer.css'
 import 'vanilla-jsoneditor/themes/jse-theme-dark.css'
 
@@ -10,9 +9,6 @@ useHead(() => ({
     title: route.meta.title as string | undefined,
     titleTemplate: (titleChunk) => titleChunk ? `${titleChunk} - Meilisearch Manager` : 'Meilisearch Manager',
 }))
-
-const colorMode = useColorMode({ emitAuto: true })
-provide('colorMode', colorMode)
 </script>
 
 <template>

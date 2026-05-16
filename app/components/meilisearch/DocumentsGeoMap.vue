@@ -1,10 +1,8 @@
 <script setup lang="ts">
-import type { UseColorModeReturn } from '@vueuse/core'
 import type { Hit } from 'meilisearch'
 import Popover from 'primevue/popover'
 import { joinURL } from 'ufo'
 import ThemedJsonViewer from '@/components/ThemedJsonViewer.vue'
-import { prefersDarkColorScheme } from '@/utils'
 
 type GeoPoint = {
     lat: number,
@@ -29,11 +27,8 @@ const runtimeConfig = useRuntimeConfig()
 const mapLightStyleUrl = joinURL(runtimeConfig.app.baseURL, 'styles/light-map.json')
 const mapDarkStyleUrl = joinURL(runtimeConfig.app.baseURL, 'styles/dark-map.json')
 
-const colorMode = inject<UseColorModeReturn>('colorMode')!
-const mapStyleUrl = computed(() => {
-    const useDarkMap = colorMode.value === 'dark' || (colorMode.value === 'auto' && prefersDarkColorScheme())
-    return useDarkMap ? mapDarkStyleUrl : mapLightStyleUrl
-})
+const { isDark } = useAppColorMode()
+const mapStyleUrl = computed(() => isDark.value ? mapDarkStyleUrl : mapLightStyleUrl)
 
 const hoveredMarkerKey = ref<string | null>(null)
 const selectedMarkerKey = ref<string | null>(null)

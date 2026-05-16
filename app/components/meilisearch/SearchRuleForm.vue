@@ -258,7 +258,6 @@ function onActionSave() {
                         </template>
                     </Column>
                     <Column
-                        header="Action"
                         frozen
                         align-frozen="right"
                     >
@@ -342,7 +341,6 @@ function onActionSave() {
                         </template>
                     </Column>
                     <Column
-                        header="Action"
                         frozen
                         align-frozen="right"
                     >

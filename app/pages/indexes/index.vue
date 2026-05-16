@@ -150,7 +150,6 @@ const indexesData = computed(() => {
                             </template>
                         </Column>
                         <Column
-                            header="Action"
                             frozen
                             alignFrozen="right"
                         >

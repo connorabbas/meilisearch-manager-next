@@ -158,3 +158,18 @@ export function camelCaseToReadable(str: string): string {
         .replace(/^./, str.charAt(0).toUpperCase())
         .trim()
 }
+
+export function isVersionAtLeast(version: string, target: string): boolean {
+    const parse = (v: string) => v.replace(/^v/, '').replace(/[-+].*$/, '').split('.').map(Number)
+    const vParts = parse(version)
+    const tParts = parse(target)
+    const maxLen = Math.max(vParts.length, tParts.length)
+
+    for (let i = 0; i < maxLen; i++) {
+        const v = vParts[i] ?? 0
+        const t = tParts[i] ?? 0
+        if (v > t) return true
+        if (v < t) return false
+    }
+    return true
+}

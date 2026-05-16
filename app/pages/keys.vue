@@ -259,7 +259,6 @@ const keyCopiedUid = computed(() => (copied.value && lastCopiedKeyUid.value) ? l
                         </template>
                     </Column>
                     <Column
-                        header="Action"
                         frozen
                         alignFrozen="right"
                     >

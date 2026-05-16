@@ -1,10 +1,10 @@
-import type { Key, KeyCreation, KeysQuery, KeysResults, KeyUpdate } from 'meilisearch'
 import { useToast } from 'primevue/usetoast'
+import { useConfirm } from 'primevue/useconfirm'
 import { useMeilisearchStore } from '@/stores/meilisearch'
-import { useConfirm } from 'primevue'
 import { usePagination } from '../usePagination'
+import type { SearchRule, SearchRuleListPayload, SearchRuleListFilterPayload, ResourceResults, SearchRuleUpdatePayload } from 'meilisearch'
 
-export function useKeys() {
+export function useDynamicSearchRules(initialPerPage: number = 20) {
     const toast = useToast()
     const confirm = useConfirm()
     const meilisearchStore = useMeilisearchStore()
@@ -15,22 +15,33 @@ export function useKeys() {
         offset,
         syncCurrentPageWithinTotal,
         handlePageEvent,
-    } = usePagination()
+    } = usePagination(initialPerPage)
 
-    const keysResults = ref<KeysResults | null>(null)
-    const keys = ref<Key[] | null>(null)
+    const rulesResults = ref<ResourceResults<SearchRule[]> | null>(null)
+    const rules = ref<SearchRule[]>([])
+    const currentRule = ref<SearchRule | null>(null)
     const isFetching = ref(false)
     const isLoading = ref(false)
     const error = ref<string | null>(null)
+    const searchQuery = ref('')
+    const activeFilter = ref<boolean | null>(null)
 
-    const keysQuery = computed<KeysQuery>(() => {
+    const rulesQuery = computed<SearchRuleListPayload>(() => {
+        const filter: SearchRuleListFilterPayload = {}
+        if (searchQuery.value.trim()) {
+            filter.attributePatterns = [`*${searchQuery.value.trim()}*`]
+        }
+        if (activeFilter.value !== null) {
+            filter.active = activeFilter.value
+        }
         return {
             limit: perPage.value,
             offset: offset.value,
+            filter: Object.keys(filter).length > 0 ? filter : null,
         }
     })
 
-    async function fetchKeys(params?: KeysQuery): Promise<KeysResults | undefined> {
+    async function fetchRules(params?: SearchRuleListPayload): Promise<ResourceResults<SearchRule[]> | undefined> {
         const client = meilisearchStore.getClient()
         if (!client) {
             error.value = 'Meilisearch client not connected'
@@ -41,37 +52,62 @@ export function useKeys() {
         error.value = null
 
         try {
-            const results = await client.getKeys(params)
-            keysResults.value = results
-            keys.value = results.results
+            const results = await client.getDynamicSearchRules(params)
+            rulesResults.value = results
+            rules.value = results.results
             return results
         } catch (err) {
-            keysResults.value = null
-            keys.value = null
+            rulesResults.value = null
+            rules.value = []
             error.value = (err as Error).message
         } finally {
             isFetching.value = false
         }
     }
 
-    async function fetchKeysPaginated(resetPagination: boolean = false): Promise<KeysResults | undefined> {
+    async function fetchRulesPaginated(resetPagination: boolean = false): Promise<ResourceResults<SearchRule[]> | undefined> {
         if (resetPagination) {
             currentPage.value = 1
         }
 
-        const results = await fetchKeys(keysQuery.value)
+        const results = await fetchRules(rulesQuery.value)
         if (!results) {
             return results
         }
 
         if (syncCurrentPageWithinTotal(results.total)) {
-            return fetchKeys(keysQuery.value)
+            return fetchRules(rulesQuery.value)
         }
 
         return results
     }
 
-    async function createKey(params: KeyCreation): Promise<Key | undefined> {
+    async function fetchRule(uid: string): Promise<SearchRule | undefined> {
+        const client = meilisearchStore.getClient()
+        if (!client) {
+            error.value = 'Meilisearch client not connected'
+            return
+        }
+
+        isFetching.value = true
+        error.value = null
+
+        try {
+            const result = await client.getDynamicSearchRule(uid)
+            currentRule.value = result
+            return result
+        } catch (err) {
+            currentRule.value = null
+            error.value = (err as Error).message
+        } finally {
+            isFetching.value = false
+        }
+    }
+
+    async function createOrUpdate(
+        uid: string,
+        payload: SearchRuleUpdatePayload
+    ): Promise<SearchRule | undefined> {
         const client = meilisearchStore.getClient()
         if (!client) {
             error.value = 'Meilisearch client not connected'
@@ -82,7 +118,14 @@ export function useKeys() {
         error.value = null
 
         try {
-            return await client.createKey(params)
+            const result = await client.updateDynamicSearchRule(uid, payload)
+            toast.add({
+                severity: 'success',
+                summary: 'Rule Saved',
+                detail: `Search rule "${uid}" was saved successfully`,
+                life: 3000,
+            })
+            return result
         } catch (err) {
             error.value = (err as Error).message
             throw err
@@ -91,7 +134,7 @@ export function useKeys() {
         }
     }
 
-    async function updateKey(keyOrUid: string, options: KeyUpdate): Promise<Key | undefined> {
+    async function deleteRule(uid: string): Promise<void> {
         const client = meilisearchStore.getClient()
         if (!client) {
             error.value = 'Meilisearch client not connected'
@@ -102,7 +145,7 @@ export function useKeys() {
         error.value = null
 
         try {
-            return await client.updateKey(keyOrUid, options)
+            await client.deleteDynamicSearchRule(uid)
         } catch (err) {
             error.value = (err as Error).message
             throw err
@@ -111,33 +154,13 @@ export function useKeys() {
         }
     }
 
-    async function deleteKey(id: string): Promise<void> {
-        const client = meilisearchStore.getClient()
-        if (!client) {
-            error.value = 'Meilisearch client not connected'
-            return
-        }
-
-        isLoading.value = true
-        error.value = null
-
-        try {
-            return await client.deleteKey(id)
-        } catch (err) {
-            error.value = (err as Error).message
-            throw err
-        } finally {
-            isLoading.value = false
-        }
-    }
-
-    function confirmDeleteKey(
-        id: string,
+    function confirmDeleteRule(
+        uid: string,
         onDeletedCallback?: () => void
     ) {
         confirm.require({
             group: 'delete',
-            message: 'Are you absolutely sure you want to delete this key?',
+            message: 'Are you sure you want to delete this search rule?',
             header: 'Danger Zone',
             rejectLabel: 'Cancel',
             rejectProps: {
@@ -149,7 +172,7 @@ export function useKeys() {
                 severity: 'danger',
             },
             accept: async () => {
-                await deleteKey(id).then(() => {
+                await deleteRule(uid).then(() => {
                     onDeletedCallback?.()
                 })
             },
@@ -160,7 +183,7 @@ export function useKeys() {
         if (newError) {
             toast.add({
                 severity: 'error',
-                summary: 'Meilisearch Keys Error',
+                summary: 'Meilisearch Search Rules Error',
                 detail: newError,
                 life: 7500,
             })
@@ -172,16 +195,20 @@ export function useKeys() {
         perPage,
         firstDatasetIndex,
         offset,
-        keys,
-        keysResults,
+        rules,
+        rulesResults,
+        currentRule,
         isFetching,
         isLoading,
         error,
+        searchQuery,
+        activeFilter,
         handlePageEvent,
-        fetchKeys,
-        fetchKeysPaginated,
-        createKey,
-        updateKey,
-        confirmDeleteKey,
+        fetchRules,
+        fetchRulesPaginated,
+        fetchRule,
+        createOrUpdate,
+        deleteRule,
+        confirmDeleteRule,
     }
 }

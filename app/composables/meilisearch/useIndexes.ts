@@ -225,7 +225,6 @@ export function useIndexes(initialPerPage: number = 20) {
             rejectProps: {
                 label: 'Cancel',
                 severity: 'secondary',
-                outlined: true
             },
             acceptProps: {
                 label: 'Delete',

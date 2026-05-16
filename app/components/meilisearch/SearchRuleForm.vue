@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import SearchRuleConditionModal from './SearchRuleConditionModal.vue'
 import SearchRuleActionModal from './SearchRuleActionModal.vue'
+import ConfirmPopup from 'primevue/confirmpopup'
+import { useConfirm } from 'primevue/useconfirm'
 import { Pencil, Plus, Trash2 } from '@lucide/vue'
 import type {
     SearchRuleCondition,
@@ -30,6 +32,8 @@ const emit = defineEmits<{
     cancel: []
 }>()
 
+const confirm = useConfirm()
+
 const canSave = computed(() => {
     return (
         modelValue.value.uid.trim().length > 0 &&
@@ -55,8 +59,23 @@ function openEditCondition(index: number) {
     searchRuleConditionModalVisible.value = true
 }
 
-function removeCondition(index: number) {
-    modelValue.value.conditions.splice(index, 1)
+function confirmRemoveCondition(event: Event, index: number) {
+    confirm.require({
+        target: event.currentTarget as HTMLElement,
+        message: 'Are you sure you want to delete this condition?',
+        rejectProps: {
+            label: 'Cancel',
+            severity: 'secondary',
+            outlined: true,
+        },
+        acceptProps: {
+            label: 'Delete',
+            severity: 'danger',
+        },
+        accept: () => {
+            modelValue.value.conditions.splice(index, 1)
+        },
+    })
 }
 
 function onConditionSave() {
@@ -107,8 +126,23 @@ function openEditAction(index: number) {
     searchRuleActionModalVisible.value = true
 }
 
-function removeAction(index: number) {
-    modelValue.value.actions.splice(index, 1)
+function confirmRemoveAction(event: Event, index: number) {
+    confirm.require({
+        target: event.currentTarget as HTMLElement,
+        message: 'Are you sure you want to delete this action?',
+        rejectProps: {
+            label: 'Cancel',
+            severity: 'secondary',
+            outlined: true,
+        },
+        acceptProps: {
+            label: 'Delete',
+            severity: 'danger',
+        },
+        accept: () => {
+            modelValue.value.actions.splice(index, 1)
+        },
+    })
 }
 
 function onActionSave() {
@@ -122,6 +156,7 @@ function onActionSave() {
 
 <template>
     <div class="flex flex-col gap-4 md:gap-8">
+        <ConfirmPopup />
         <SearchRuleConditionModal
             v-model:visible="searchRuleConditionModalVisible"
             v-model:condition="editingCondition"
@@ -247,7 +282,7 @@ function onActionSave() {
                                     severity="secondary"
                                     rounded
                                     text
-                                    @click="removeCondition(index)"
+                                    @click="confirmRemoveCondition($event, index)"
                                 >
                                     <template #icon>
                                         <Trash2 class="size-4!" />
@@ -331,7 +366,7 @@ function onActionSave() {
                                     severity="secondary"
                                     rounded
                                     text
-                                    @click="removeAction(index)"
+                                    @click="confirmRemoveAction($event, index)"
                                 >
                                     <template #icon>
                                         <Trash2 class="size-4!" />

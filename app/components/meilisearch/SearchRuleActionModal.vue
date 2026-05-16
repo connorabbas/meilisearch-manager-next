@@ -184,7 +184,7 @@ watch(visible, (isVisible) => {
                     v-model="documentQuery"
                     :suggestions="searchSuggestions"
                     :option-label="(option: any) => String(option[primaryKey] ?? '')"
-                    placeholder="Search for a document..."
+                    placeholder="Search for a document or enter an id..."
                     :loading="isSearching"
                     fluid
                     @complete="onDocumentQueryChange"

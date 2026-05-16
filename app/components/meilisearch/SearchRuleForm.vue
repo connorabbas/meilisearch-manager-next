@@ -385,9 +385,9 @@ function onActionSave() {
                 @click="emit('cancel')"
             />
             <Button
-                v-if="canSave"
                 label="Save Rule"
                 :loading="isLoading"
+                :disabled="!canSave"
                 @click="emit('save')"
             />
         </div>

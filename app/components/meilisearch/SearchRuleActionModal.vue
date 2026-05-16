@@ -21,6 +21,7 @@ const actionTypeOptions = [
 const internalActionType = ref<'pin'>('pin')
 const selectedIndexUid = ref<string>('')
 const documentQuery = ref('')
+const autoCompleteModel = ref<any>('')
 const selectedDocumentId = ref<string | null>(null)
 const position = ref<number>(0)
 const searchSuggestions = ref<RecordAny[]>([])
@@ -41,9 +42,11 @@ function resetForm() {
     if (a.selector?.id) {
         selectedDocumentId.value = a.selector.id
         documentQuery.value = String(a.selector.id)
+        autoCompleteModel.value = documentQuery.value
     } else {
         selectedDocumentId.value = null
         documentQuery.value = ''
+        autoCompleteModel.value = ''
     }
 
     position.value = (a.action as SearchRulePinAction)?.position ?? 0
@@ -75,6 +78,7 @@ const debouncedSearch = useDebounceFn(searchDocuments, 300)
 
 function onDocumentQueryChange(event: { query: string }) {
     documentQuery.value = event.query
+    autoCompleteModel.value = event.query
     selectedDocumentId.value = null
     debouncedSearch(event.query)
 }
@@ -90,6 +94,7 @@ function onDocumentSelect(event: { value: RecordAny | string }) {
         selectedDocumentId.value = id
         documentQuery.value = id
     }
+    autoCompleteModel.value = documentQuery.value
 }
 
 function onDocumentBlur() {
@@ -101,6 +106,7 @@ function onDocumentBlur() {
     if (trimmed) {
         selectedDocumentId.value = trimmed
     }
+    autoCompleteModel.value = documentQuery.value
 }
 
 function handleSave() {
@@ -181,7 +187,7 @@ watch(visible, (isVisible) => {
                 <label for="action-document">Document</label>
                 <AutoComplete
                     id="action-document"
-                    v-model="documentQuery"
+                    v-model="autoCompleteModel"
                     :suggestions="searchSuggestions"
                     :option-label="(option: any) => String(option[primaryKey] ?? '')"
                     placeholder="Search for a document or enter an id..."

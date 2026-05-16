@@ -89,9 +89,7 @@ function toggleContextMenu(event: Event, rule: SearchRule) {
             },
         },
     ]
-    if (contextMenu.value && contextMenu.value?.$el) {
-        contextMenu.value.$el.toggle(event)
-    }
+    contextMenu.value?.toggle(event)
 }
 </script>
 

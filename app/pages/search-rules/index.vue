@@ -10,6 +10,7 @@ import { useDebounceFn } from '@vueuse/core'
 import { useToast } from 'primevue/usetoast'
 import type { SearchRule } from 'meilisearch'
 import type { MenuItem } from '@/types'
+import type { DataTableSortEvent } from 'primevue/datatable'
 
 definePageMeta({
     layout: 'app',
@@ -66,7 +67,6 @@ function editRule(rule: SearchRule) {
 }
 
 const activeFilterOptions = [
-    { label: 'All', value: null },
     { label: 'Active', value: true },
     { label: 'Inactive', value: false },
 ]
@@ -82,6 +82,17 @@ watch(searchQuery, () => {
 watch(activeFilter, () => {
     fetchRulesPaginated(true)
 })
+
+function onSort(event: DataTableSortEvent) {
+    const { sortField, sortOrder } = event
+    if (sortField !== 'priority' || sortOrder === null || sortOrder === undefined) return
+
+    rules.value.sort((a, b) => {
+        const aVal = a.priority ?? Number.MAX_SAFE_INTEGER
+        const bVal = b.priority ?? Number.MAX_SAFE_INTEGER
+        return (aVal - bVal) * sortOrder
+    })
+}
 
 const contextMenu = useTemplateRef('rule-context-menu')
 const contextMenuItems = ref<MenuItem[]>([])
@@ -161,6 +172,7 @@ function toggleContextMenu(event: Event, rule: SearchRule) {
                 <DataTable
                     lazy
                     paginator
+                    removable-sort
                     :value="rules"
                     :loading="isFetchingRules"
                     :rows="perPage"
@@ -181,6 +193,7 @@ function toggleContextMenu(event: Event, rule: SearchRule) {
                     scrollable
                     column-resize-mode="fit"
                     @page="handlePageEvent($event, () => fetchRulesPaginated())"
+                    @sort="onSort"
                 >
                     <template #empty>
                         <NotFoundMessage subject="Rule" />
@@ -197,7 +210,7 @@ function toggleContextMenu(event: Event, rule: SearchRule) {
                                 </InputIcon>
                                 <InputText
                                     v-model="searchQuery"
-                                    placeholder="Search by name..."
+                                    placeholder="Search by uid..."
                                     fluid
                                 />
                             </IconField>
@@ -219,6 +232,7 @@ function toggleContextMenu(event: Event, rule: SearchRule) {
                     <Column
                         field="priority"
                         header="Priority"
+                        sortable
                     >
                         <template #body="{ data }">
                             {{ (data as SearchRule).priority ?? '' }}
@@ -235,7 +249,7 @@ function toggleContextMenu(event: Event, rule: SearchRule) {
                                 :options="activeFilterOptions"
                                 option-label="label"
                                 option-value="value"
-                                placeholder="Status"
+                                placeholder="Any"
                                 show-clear
                                 fluid
                             />

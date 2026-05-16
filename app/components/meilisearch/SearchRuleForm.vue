@@ -39,20 +39,20 @@ const canSave = computed(() => {
 })
 
 // Condition dialog
-const SearchRuleConditionModalVisible = ref(false)
+const searchRuleConditionModalVisible = ref(false)
 const editingCondition = ref<SearchRuleCondition>({ scope: 'query', isEmpty: true })
 const editingConditionIndex = ref<number | null>(null)
 
 function openAddCondition() {
     editingConditionIndex.value = null
     editingCondition.value = { scope: 'query', isEmpty: true }
-    SearchRuleConditionModalVisible.value = true
+    searchRuleConditionModalVisible.value = true
 }
 
 function openEditCondition(index: number) {
     editingConditionIndex.value = index
     editingCondition.value = structuredClone(toRaw(modelValue.value.conditions[index])) as SearchRuleCondition
-    SearchRuleConditionModalVisible.value = true
+    searchRuleConditionModalVisible.value = true
 }
 
 function removeCondition(index: number) {
@@ -85,7 +85,7 @@ function formatCondition(condition: SearchRuleCondition): string {
 }
 
 // Action dialog
-const SearchRuleActionModalVisible = ref(false)
+const searchRuleActionModalVisible = ref(false)
 const editingAction = ref<SearchRuleAction>({
     selector: { indexUid: null, id: null },
     action: { type: 'pin', position: 0 },
@@ -98,13 +98,13 @@ function openAddAction() {
         selector: { indexUid: null, id: null },
         action: { type: 'pin', position: 0 },
     }
-    SearchRuleActionModalVisible.value = true
+    searchRuleActionModalVisible.value = true
 }
 
 function openEditAction(index: number) {
     editingActionIndex.value = index
     editingAction.value = structuredClone(toRaw(modelValue.value.actions[index])) as SearchRuleAction
-    SearchRuleActionModalVisible.value = true
+    searchRuleActionModalVisible.value = true
 }
 
 function removeAction(index: number) {
@@ -123,12 +123,12 @@ function onActionSave() {
 <template>
     <div class="flex flex-col gap-4 md:gap-8">
         <SearchRuleConditionModal
-            v-model:visible="SearchRuleConditionModalVisible"
+            v-model:visible="searchRuleConditionModalVisible"
             v-model:condition="editingCondition"
             @save="onConditionSave"
         />
         <SearchRuleActionModal
-            v-model:visible="SearchRuleActionModalVisible"
+            v-model:visible="searchRuleActionModalVisible"
             v-model:action="editingAction"
             @save="onActionSave"
         />

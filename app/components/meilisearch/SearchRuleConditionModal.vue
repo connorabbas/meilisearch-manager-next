@@ -24,6 +24,24 @@ const queryContainsValue = ref('')
 const timeStart = ref<Date | null>(null)
 const timeEnd = ref<Date | null>(null)
 
+const isTimeEmpty = computed(() => {
+    if (internalScope.value !== 'time') return false
+    return !timeStart.value && !timeEnd.value
+})
+
+const isTimeRangeInverted = computed(() => {
+    if (internalScope.value !== 'time') return false
+    if (!timeStart.value || !timeEnd.value) return false
+    return timeStart.value.getTime() > timeEnd.value.getTime()
+})
+
+const canSave = computed(() => {
+    if (internalScope.value === 'query') {
+        return queryMatchType.value !== 'contains' || queryContainsValue.value.trim().length > 0
+    }
+    return !isTimeEmpty.value && !isTimeRangeInverted.value
+})
+
 function resetForm() {
     const c = condition.value
 
@@ -146,6 +164,7 @@ watch(visible, (isVisible) => {
                         show-time
                         hour-format="24"
                         fluid
+                        :invalid="isTimeEmpty || isTimeRangeInverted"
                     />
                 </div>
                 <div class="flex flex-col gap-2">
@@ -157,8 +176,13 @@ watch(visible, (isVisible) => {
                         show-time
                         hour-format="24"
                         fluid
+                        :invalid="isTimeEmpty || isTimeRangeInverted"
                     />
                 </div>
+                <Message v-if="isTimeEmpty || isTimeRangeInverted" severity="error">
+                    <span v-if="isTimeEmpty">A time condition requires at least a start or end date.</span>
+                    <span v-else-if="isTimeRangeInverted">Start date must be before end date.</span>
+                </Message>
             </template>
         </div>
 
@@ -172,11 +196,7 @@ watch(visible, (isVisible) => {
                 />
                 <Button
                     label="Save"
-                    :disabled="
-                        internalScope === 'query'
-                            ? queryMatchType === 'contains' && !queryContainsValue.trim()
-                            : false
-                    "
+                    :disabled="!canSave"
                     @click="handleSave"
                 />
             </div>

@@ -6,7 +6,8 @@ import SearchRuleForm from '@/components/meilisearch/SearchRuleForm.vue'
 import PageTitleSection from '@/components/PageTitleSection.vue'
 import { isVersionAtLeast } from '@/utils'
 import { Home } from '@lucide/vue'
-import type { SearchRuleUpdatePayload } from 'meilisearch'
+import type { SearchRuleUpdatePayload, SearchRuleCondition, SearchRuleAction } from 'meilisearch'
+import type { SearchRuleFormState } from '@/components/meilisearch/SearchRuleForm.vue'
 
 definePageMeta({
     layout: 'app',
@@ -48,13 +49,13 @@ const isFeatureEnabled = computed(() => {
 
 const isFeatureAvailable = computed(() => isSupportedVersion.value && isFeatureEnabled.value)
 
-const formState = reactive({
+const formState = reactive<SearchRuleFormState>({
     uid: '',
     description: '',
-    priority: null as number | null,
+    priority: null,
     active: true,
-    conditions: [] as any[],
-    actions: [] as any[],
+    conditions: [] as SearchRuleCondition[],
+    actions: [] as SearchRuleAction[],
 })
 
 async function handleSave() {
@@ -74,8 +75,8 @@ async function handleSave() {
     }
 }
 
-function handleCancel() {
-    navigateTo('/search-rules')
+async function handleCancel() {
+    await navigateTo('/search-rules')
 }
 </script>
 

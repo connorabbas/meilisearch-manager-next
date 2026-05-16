@@ -160,7 +160,7 @@ export function camelCaseToReadable(str: string): string {
 }
 
 export function isVersionAtLeast(version: string, target: string): boolean {
-    const parse = (v: string) => v.replace(/^v/, '').split('.').map(Number)
+    const parse = (v: string) => v.replace(/^v/, '').replace(/[-+].*$/, '').split('.').map(Number)
     const vParts = parse(version)
     const tParts = parse(target)
     const maxLen = Math.max(vParts.length, tParts.length)

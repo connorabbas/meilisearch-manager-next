@@ -11,7 +11,7 @@ export function useSettings() {
     const settings = ref<Settings | null>(null)
     const filterableAttributes = ref<FilterableAttributes | null>(null)
     const sortableAttributes = ref<SortableAttributes | null>(null)
-    const embedders = ref<Embedders>(null)
+    const embedders = ref<Embedders | null>(null)
     const isFetching = reactive({
         allSettings: false,
         filterableAttributes: false,

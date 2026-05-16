@@ -39,12 +39,6 @@ const {
     fetchVersion,
 } = useStats()
 
-await Promise.all([
-    fetchExperimentalFeatures(),
-    fetchVersion(),
-    fetchRulesPaginated(),
-])
-
 const isSupportedVersion = computed(() => {
     return version.value ? isVersionAtLeast(version.value.pkgVersion, '1.41.0') : false
 })
@@ -55,11 +49,19 @@ const isFeatureEnabled = computed(() => {
 
 const isFeatureAvailable = computed(() => isSupportedVersion.value && isFeatureEnabled.value)
 
+await Promise.all([
+    fetchExperimentalFeatures(),
+    fetchVersion(),
+])
+
+if (isFeatureAvailable.value) {
+    await fetchRulesPaginated()
+}
+
 function editRule(rule: SearchRule) {
     navigateTo(`/search-rules/${rule.uid}/edit`)
 }
 
-// Dead Code?
 const contextMenu = useTemplateRef('rule-context-menu')
 const contextMenuItems = ref<MenuItem[]>([])
 function toggleContextMenu(event: Event, rule: SearchRule) {

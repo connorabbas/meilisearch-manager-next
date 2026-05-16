@@ -187,7 +187,6 @@ watch(visible, (isVisible) => {
                     placeholder="Search for a document..."
                     :loading="isSearching"
                     fluid
-                    forceSelection
                     @complete="onDocumentQueryChange"
                     @item-select="onDocumentSelect"
                     @blur="onDocumentBlur"

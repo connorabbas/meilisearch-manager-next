@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { Sun, Moon, Monitor } from '@lucide/vue'
-import type { UseColorModeReturn } from '@vueuse/core'
 
 const props = withDefaults(defineProps<{
     showLabel?: boolean,
@@ -8,8 +7,8 @@ const props = withDefaults(defineProps<{
     showLabel: true,
 })
 
-const colorMode = inject<UseColorModeReturn>('colorMode')!
-const selectedColorMode = ref(colorMode?.value || 'auto')
+const { colorMode } = useAppColorMode()
+const selectedColorMode = ref(colorMode.value)
 
 const options = [
     { label: 'Light', value: 'light', icon: Sun },

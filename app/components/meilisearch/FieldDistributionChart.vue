@@ -1,17 +1,11 @@
 <script setup lang="ts">
-import type { UseColorModeReturn } from '@vueuse/core'
 import Chart from 'primevue/chart'
-import { prefersDarkColorScheme } from '@/utils'
 
 const props = defineProps<{
     fieldDistribution: Record<string, number> | null | undefined
 }>()
 
-const colorMode = inject<UseColorModeReturn>('colorMode')
-
-const isDark = computed(() => {
-    return colorMode?.value === 'dark' || (prefersDarkColorScheme() && colorMode?.value === 'auto')
-})
+const { isDark } = useAppColorMode()
 
 const chartColors = [
     '--color-cyan-500',
@@ -115,7 +109,7 @@ const chartOptions = computed(() => {
 
 watch(() => props.fieldDistribution, buildChartData, { immediate: false })
 
-watch(() => colorMode?.value, buildChartData, { flush: 'sync' })
+watch(isDark, buildChartData, { flush: 'sync' })
 
 onMounted(() => {
     buildChartData()

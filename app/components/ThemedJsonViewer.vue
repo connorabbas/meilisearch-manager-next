@@ -1,17 +1,13 @@
 <script setup lang="ts">
-import type { UseColorModeReturn } from '@vueuse/core'
 import { JsonViewer } from 'vue3-json-viewer'
-import { prefersDarkColorScheme } from '@/utils'
 
 const props = defineProps<{
     data: object,
     expanded?: boolean,
 }>()
 
-const colorMode = inject<UseColorModeReturn>('colorMode')!
-const theme = computed(() => {
-    return (colorMode.value === 'dark' || (prefersDarkColorScheme() && colorMode.value === 'auto')) ? 'dark' : 'light'
-})
+const { isDark } = useAppColorMode()
+const theme = computed(() => isDark.value ? 'dark' : 'light')
 
 const expandToggled = ref(0)
 const expandedDataDepth = ref(1)

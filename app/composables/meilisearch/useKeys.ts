@@ -143,7 +143,6 @@ export function useKeys() {
             rejectProps: {
                 label: 'Cancel',
                 severity: 'secondary',
-                outlined: true
             },
             acceptProps: {
                 label: 'Delete',

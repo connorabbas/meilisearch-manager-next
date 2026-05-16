@@ -66,7 +66,6 @@ function confirmRemoveCondition(event: Event, index: number) {
         rejectProps: {
             label: 'Cancel',
             severity: 'secondary',
-            outlined: true,
         },
         acceptProps: {
             label: 'Delete',
@@ -133,7 +132,6 @@ function confirmRemoveAction(event: Event, index: number) {
         rejectProps: {
             label: 'Cancel',
             severity: 'secondary',
-            outlined: true,
         },
         acceptProps: {
             label: 'Delete',

@@ -3,7 +3,7 @@ import { useStats } from '@/composables/meilisearch/useStats'
 import { ArrowRight, Home, Plus } from '@lucide/vue'
 import PageTitleSection from '@/components/PageTitleSection.vue'
 import { useIndexes } from '@/composables/meilisearch/useIndexes'
-import CreateIndexDrawer from '@/components/meilisearch/CreateIndexDrawer.vue'
+import CreateIndexModal from '@/components/meilisearch/CreateIndexModal.vue'
 import NotFoundMessage from '@/components/NotFoundMessage.vue'
 import { formatNumber, formatDate } from '@/utils'
 
@@ -32,7 +32,7 @@ async function fetchData() {
 }
 await fetchData()
 
-const createIndexDrawerOpen = ref(false)
+const createIndexModalOpen = ref(false)
 
 const indexesData = computed(() => {
     return indexes.value.map((index) => {
@@ -46,12 +46,10 @@ const indexesData = computed(() => {
 
 <template>
     <div class="flex flex-col gap-4 md:gap-8">
-        <Teleport to="body">
-            <CreateIndexDrawer
-                v-model="createIndexDrawerOpen"
-                @index-created="fetchData"
-            />
-        </Teleport>
+        <CreateIndexModal
+            v-model:visible="createIndexModalOpen"
+            @index-created="fetchData"
+        />
 
         <PageTitleSection>
             <template #title>
@@ -65,7 +63,7 @@ const indexesData = computed(() => {
                     />
                     <Button
                         label="New Index"
-                        @click="createIndexDrawerOpen = true"
+                        @click="createIndexModalOpen = true"
                     >
                         <template #icon>
                             <Plus />

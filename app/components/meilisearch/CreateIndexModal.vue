@@ -2,17 +2,20 @@
 import { useIndexes } from '@/composables/meilisearch/useIndexes'
 import type { IndexOptions } from 'meilisearch'
 
-const drawerOpen = defineModel<boolean>({ default: false })
+const visible = defineModel<boolean>('visible', { default: false })
 
-const emit = defineEmits(['hide', 'index-created'])
+const emit = defineEmits<{
+    'index-created': []
+}>()
 
 const { isSendingTask, createIndex } = useIndexes()
 
 const uid = ref<string>('')
 const primaryKey = ref<string>()
+
 function submitNewIndex() {
     createIndex(uid.value, { primaryKey: primaryKey.value } as IndexOptions).then(() => {
-        drawerOpen.value = false
+        visible.value = false
         emit('index-created')
     }).catch(() => {
         //
@@ -24,10 +27,16 @@ function reset() {
     primaryKey.value = undefined
 }
 
-function handleHideDrawer() {
+function handleCancel() {
+    visible.value = false
     reset()
-    emit('hide')
 }
+
+watch(visible, (isVisible) => {
+    if (isVisible) {
+        reset()
+    }
+})
 
 watch(primaryKey, (newVal) => {
     if (newVal === '') {
@@ -37,23 +46,24 @@ watch(primaryKey, (newVal) => {
 </script>
 
 <template>
-    <Drawer
-        v-model:visible="drawerOpen"
+    <Dialog
+        v-model:visible="visible"
+        class="w-full sm:w-[30rem]"
+        position="center"
         header="New Index"
-        class="w-full sm:w-[40rem]"
-        position="right"
-        @hide="handleHideDrawer"
+        :draggable="false"
+        dismissable-mask
+        modal
     >
         <form
             id="create-index-form"
-            class="space-y-6 sm:space-y-8"
+            class="flex flex-col gap-6"
             @submit.prevent="submitNewIndex"
         >
             <div class="flex flex-col gap-2">
                 <label for="new-index-uid">UID</label>
                 <InputText
                     id="new-index-uid"
-                    ref="uid-input"
                     v-model="uid"
                     placeholder="uid of the requested index"
                     type="text"
@@ -73,12 +83,20 @@ watch(primaryKey, (newVal) => {
             </div>
         </form>
         <template #footer>
-            <Button
-                type="submit"
-                form="create-index-form"
-                label="Submit"
-                :loading="isSendingTask"
-            />
+            <div class="flex gap-4">
+                <Button
+                    label="Cancel"
+                    severity="secondary"
+                    text
+                    @click="handleCancel"
+                />
+                <Button
+                    type="submit"
+                    form="create-index-form"
+                    label="Submit"
+                    :loading="isSendingTask"
+                />
+            </div>
         </template>
-    </Drawer>
+    </Dialog>
 </template>

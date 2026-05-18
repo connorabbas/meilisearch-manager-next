@@ -380,6 +380,7 @@ function onActionSave() {
             <Button
                 label="Cancel"
                 severity="secondary"
+                text
                 @click="emit('cancel')"
             />
             <Button

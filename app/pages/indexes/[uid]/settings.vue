@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useSettings } from '@/composables/meilisearch/useSettings'
-import { AlertCircle, CircleQuestionMark, Pencil, TriangleAlert, X } from '@lucide/vue'
+import { AlertCircle, CircleQuestionMark, Pencil, TriangleAlert, X, Check } from '@lucide/vue'
 import { Mode } from 'vanilla-jsoneditor'
 
 definePageMeta({
@@ -82,6 +82,7 @@ watch(() => settings.value, (newVal) => {
                         <Button
                             label="Cancel"
                             severity="secondary"
+                            text
                             @click="toggleEditMode"
                         >
                             <template #icon>
@@ -92,7 +93,11 @@ watch(() => settings.value, (newVal) => {
                             label="Save"
                             :loading="isLoadingTask"
                             @click="handleUpdateSettings"
-                        />
+                        >
+                            <template #icon>
+                                <Check />
+                            </template>
+                        </Button>
                     </div>
                 </div>
             </div>

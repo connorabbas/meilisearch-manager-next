@@ -12,11 +12,9 @@ const props = defineProps<{
     enableGeoFilters?: boolean,
 }>()
 
-const drawerOpen = defineModel<boolean>({ default: false })
+const visible = defineModel<boolean>('visible', { default: false })
 const filter = defineModel<Filter | null>('filter', { required: true })
 const geoSort = defineModel<string | null>('geoSort', { default: null })
-
-const emit = defineEmits(['hide', 'searched'])
 
 const { searchFacetValues } = useFacetSearch()
 
@@ -69,10 +67,6 @@ const hasGeoFilterSupport = computed(() => {
 const hasGeoSortSupport = computed(() => {
     return ((props.sortableAttributes as string[]) ?? []).includes('_geo')
 })
-
-function handleHideDrawer() {
-    emit('hide')
-}
 
 function updateFacetFilterValue(attributeName: string, value: string[]) {
     const facetFilter = facetFilters.value[attributeName]
@@ -333,11 +327,10 @@ watch(() => props.enableGeoFilters, (enabled) => {
 
 <template>
     <Drawer
-        v-model:visible="drawerOpen"
+        v-model:visible="visible"
         header="Filter Documents"
         class="w-full sm:w-[30rem]"
         position="right"
-        @hide="handleHideDrawer"
     >
         <!-- TODO: manual input search -->
         <div class="mt-1 relative flex flex-col gap-4">

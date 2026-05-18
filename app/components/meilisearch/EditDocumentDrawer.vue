@@ -13,9 +13,10 @@ const props = withDefaults(defineProps<{
     document: null,
 })
 
-const emit = defineEmits(['hide', 'document-updated'])
+const emit = defineEmits(['document-updated'])
 
-const drawerOpen = defineModel<boolean>({ default: false })
+
+const visible = defineModel<boolean>('visible', { default: false })
 
 const { addOrUpdateDocuments, isSendingTask, error } = useDocuments()
 
@@ -23,7 +24,7 @@ const updatedDocument = ref<RecordAny>(props.document ?? {})
 function handleSaveDocument() {
     addOrUpdateDocuments('update', props.indexUid, [updatedDocument.value], props.primaryKey)
         .then(() => {
-            drawerOpen.value = false
+            visible.value = false
             emit('document-updated')
         })
 }
@@ -45,11 +46,10 @@ watch(() => props.document, (newVal: RecordAny | null) => {
 
 <template>
     <Drawer
-        v-model:visible="drawerOpen"
+        v-model:visible="visible"
         header="Edit Document"
         class="w-full sm:w-[60rem]"
         position="right"
-        @hide="$emit('hide')"
     >
         <div class="flex flex-col gap-4 mt-1">
             <div v-if="hasErrors">

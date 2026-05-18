@@ -11,9 +11,10 @@ const props = withDefaults(defineProps<{
     apiKey: null,
 })
 
-const drawerOpen = defineModel<boolean>({ default: false })
+const visible = defineModel<boolean>('visible', { default: false })
 
-const emit = defineEmits(['hide', 'key-updated'])
+const emit = defineEmits(['key-updated'])
+
 
 const toast = useToast()
 const { indexes, isFetching: isFetchingIndexes, fetchAllIndexes } = useIndexes()
@@ -34,12 +35,18 @@ function saveNewKey() {
             detail: `The API key: "${keyToUpdate.value.name}" was successfully updated`,
             life: 3000,
         })
-        drawerOpen.value = false
+        visible.value = false
         emit('key-updated')
     }).catch(() => {
         //
     })
 }
+
+watch(visible, (isVisible) => {
+    if (isVisible) {
+        fetchAllIndexes()
+    }
+})
 
 watch(keyToUpdate, (newVal) => {
     if (newVal.name === '') {
@@ -62,12 +69,10 @@ watch(() => props.apiKey, (newVal: Key | null) => {
 
 <template>
     <Drawer
-        v-model:visible="drawerOpen"
+        v-model:visible="visible"
         header="Edit API Key"
         class="w-full sm:w-[40rem]"
         position="right"
-        @show="fetchAllIndexes"
-        @hide="$emit('hide')"
     >
         <form
             id="edit-key-form"

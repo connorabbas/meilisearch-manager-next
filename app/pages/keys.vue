@@ -84,12 +84,20 @@ function toggleKeyContextMenu(event: Event, key: Key) {
     }
 }
 
-function resetCurrentKey() {
-    // delayed null reset to allow the drawer close animation to complete
-    setTimeout(() => {
-        currentKey.value = null
-    }, 250)
-}
+watch(keyDetailsDrawerOpen, (isOpen) => {
+    if (!isOpen) {
+        setTimeout(() => {
+            currentKey.value = null
+        }, 250)
+    }
+})
+watch(editKeyDrawerOpen, (isOpen) => {
+    if (!isOpen) {
+        setTimeout(() => {
+            currentKey.value = null
+        }, 250)
+    }
+})
 
 const lastCopiedKeyUid = ref()
 async function copyApiKey(key: string, uid: string) {
@@ -109,20 +117,18 @@ const keyCopiedUid = computed(() => (copied.value && lastCopiedKeyUid.value) ? l
         <Teleport to="body">
             <KeyDetailsDrawer
                 v-if="currentKey"
-                v-model="keyDetailsDrawerOpen"
+                v-model:visible="keyDetailsDrawerOpen"
                 :api-key="currentKey"
                 :copied-key-uid="keyCopiedUid"
-                @hide="resetCurrentKey"
                 @copy-key="copyApiKey"
             />
             <CreateKeyDrawer
-                v-model="newKeyDrawerOpen"
+                v-model:visible="newKeyDrawerOpen"
                 @key-created="fetchKeysPaginated"
             />
             <EditKeyDrawer
-                v-model="editKeyDrawerOpen"
+                v-model:visible="editKeyDrawerOpen"
                 :api-key="currentKey"
-                @hide="resetCurrentKey"
                 @key-updated="fetchKeysPaginated"
             />
         </Teleport>

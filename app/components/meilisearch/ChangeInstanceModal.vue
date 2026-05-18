@@ -65,7 +65,7 @@ async function handleChangeInstance() {
             <div class="flex gap-4">
                 <Button
                     label="Cancel"
-                    plain
+                    severity="secondary"
                     text
                     @click="modalOpen = false"
                 />

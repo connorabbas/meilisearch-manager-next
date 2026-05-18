@@ -1,4 +1,4 @@
-import { FolderSearch, Plus, ArrowLeftRight, Trash2, ListCheck, KeyRound, DatabaseBackup, LayoutGrid, FlaskConical, Pin } from '@lucide/vue'
+import { FolderSearch, Plus, ArrowLeftRight, Trash2, ListCheck, KeyRound, DatabaseBackup, LayoutGrid, FlaskConical, SearchCheck } from '@lucide/vue'
 import type { MenuItem } from '@/types'
 import { useMeilisearchStore } from '@/stores/meilisearch'
 
@@ -50,7 +50,7 @@ export function useAppLayout() {
         },
         {
             label: 'Search Rules',
-            lucideIcon: Pin,
+            lucideIcon: SearchCheck,
             route: '/search-rules',
             active: isActiveRoute('search-rules') || currentPath.value.startsWith('/search-rules'),
         },

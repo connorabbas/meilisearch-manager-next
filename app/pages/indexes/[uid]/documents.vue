@@ -142,14 +142,13 @@ function editDocument(document: RecordAny) {
     currentDocument.value = document
     editDocumentDrawerOpen.value = true
 }
-function handleEditDrawerHidden() {
-    if (!isSendingTask.value) {
-        // delayed null reset to allow the drawer close animation to complete
+watch(editDocumentDrawerOpen, (isOpen) => {
+    if (!isOpen && !isSendingTask.value) {
         setTimeout(() => {
             currentDocument.value = null
         }, 250)
     }
-}
+})
 
 // Hybrid search
 const hybridSearchModalOpen = ref(false)
@@ -306,21 +305,20 @@ onMounted(() => {
         <Teleport to="body">
             <div class="relative">
                 <ImportDocumentsDrawer
-                    v-model="showImportDocumentsDrawerOpen"
+                    v-model:visible="showImportDocumentsDrawerOpen"
                     :index-uid="indexUid"
                     :primary-key="currentIndex?.primaryKey"
                     @documents-imported="fetchData"
                 />
                 <EditDocumentDrawer
-                    v-model="editDocumentDrawerOpen"
+                    v-model:visible="editDocumentDrawerOpen"
                     :index-uid="indexUid"
                     :primary-key="currentIndex?.primaryKey"
                     :document="currentDocument"
                     @document-updated="fetchData"
-                    @hide="handleEditDrawerHidden"
                 />
                 <FilterDocumentsDrawer
-                    v-model="showFilteringDrawerOpen"
+                    v-model:visible="showFilteringDrawerOpen"
                     v-model:filter="searchFilter"
                     v-model:geo-sort="searchGeoSort"
                     :index-uid="indexUid"

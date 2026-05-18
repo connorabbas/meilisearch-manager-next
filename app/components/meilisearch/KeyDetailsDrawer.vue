@@ -4,14 +4,16 @@ import { formatDate, maskedApiKey } from '@/utils'
 import { useClipboard } from '@vueuse/core'
 import { Check, Copy } from '@lucide/vue'
 
-const drawerOpen = defineModel<boolean>({ default: false })
+const visible = defineModel<boolean>('visible', { default: false })
 
 const props = defineProps<{
     apiKey: Key,
     copiedKeyUid: string | null,
 }>()
 
-defineEmits(['hide', 'copy-key'])
+const emit = defineEmits<{
+    'copy-key': [key: string, uid: string]
+}>()
 
 const { isSupported: canCopy } = useClipboard()
 
@@ -30,11 +32,10 @@ const keyExpired = computed(() => {
 <template>
     <Drawer
         :key="props.apiKey.uid"
-        v-model:visible="drawerOpen"
+        v-model:visible="visible"
         :header="keyName"
         class="w-full sm:w-[40rem]"
         position="right"
-        @hide="$emit('hide')"
     >
         <div class="space-y-4">
             <Fieldset legend="UID">
@@ -63,7 +64,7 @@ const keyExpired = computed(() => {
                         severity="secondary"
                         size="small"
                         text
-                        @click="$emit('copy-key', props.apiKey.key, props.apiKey.uid)"
+                        @click="emit('copy-key', props.apiKey.key, props.apiKey.uid)"
                     >
                         <Check v-if="keyCopied" />
                         <Copy v-else />

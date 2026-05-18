@@ -5,9 +5,10 @@ import type { KeyCreation } from 'meilisearch'
 import { useToast } from 'primevue'
 import { CircleQuestionMark, Info } from '@lucide/vue'
 
-const drawerOpen = defineModel<boolean>({ default: false })
+const visible = defineModel<boolean>('visible', { default: false })
 
-const emit = defineEmits(['hide', 'key-created'])
+const emit = defineEmits(['key-created'])
+
 
 const toast = useToast()
 const { indexes, isFetching: isFetchingIndexes, fetchAllIndexes } = useIndexes()
@@ -63,7 +64,7 @@ function submitNewKey() {
             detail: `The API key: "${newKey.value.name}" was successfully created`,
             life: 3000,
         })
-        drawerOpen.value = false
+        visible.value = false
         emit('key-created')
     }).catch(() => {
         // TODO
@@ -78,10 +79,12 @@ function reset() {
     allActions.value = false
 }
 
-function handleHideDrawer() {
-    reset()
-    emit('hide')
-}
+watch(visible, (isVisible) => {
+    if (isVisible) {
+        fetchAllIndexes()
+        reset()
+    }
+})
 
 watch(newKey, (newVal) => {
     if (newVal.uid === '') {
@@ -104,12 +107,10 @@ watch(allActions, (newVal) => {
 
 <template>
     <Drawer
-        v-model:visible="drawerOpen"
+        v-model:visible="visible"
         header="New API Key"
         class="w-full sm:w-[40rem]"
         position="right"
-        @show="fetchAllIndexes"
-        @hide="handleHideDrawer"
     >
         <form
             id="create-key-form"

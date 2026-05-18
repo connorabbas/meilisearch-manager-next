@@ -12,9 +12,9 @@ const props = defineProps<{
     primaryKey?: string,
 }>()
 
-const emit = defineEmits(['hide', 'documents-imported'])
+const emit = defineEmits(['documents-imported'])
 
-const drawerOpen = defineModel<boolean>({ default: false })
+const visible = defineModel<boolean>('visible', { default: false })
 
 const { addOrUpdateDocuments, addOrUpdateDocumentsFromString, isSendingTask, error } = useDocuments()
 
@@ -70,13 +70,13 @@ async function handleSaveDocument() {
         // TODO: handle JSON errors (reference settings)
         addOrUpdateDocuments(importMode.value, props.indexUid, newDocuments.value, props.primaryKey)
             .then(() => {
-                drawerOpen.value = false
+                visible.value = false
                 emit('documents-imported')
             })
     } else {
         addOrUpdateDocumentsFromString(importMode.value, props.indexUid, newDocumentsAsString.value, uploadContentType.value)
             .then(() => {
-                drawerOpen.value = false
+                visible.value = false
                 emit('documents-imported')
             })
     }
@@ -90,10 +90,11 @@ function reset() {
     newDocumentsAsString.value = ''
 }
 
-function handleHidden() {
-    emit('hide')
-    reset()
-}
+watch(visible, (isVisible) => {
+    if (!isVisible) {
+        reset()
+    }
+})
 
 watch(() => newDocuments.value, (newVal) => {
     if (importMethod.value === 'manual') {
@@ -107,16 +108,14 @@ watch(uploadContentType, (newVal) => {
         handleUploaderReset()
     }
 })
-
 </script>
 
 <template>
     <Drawer
-        v-model:visible="drawerOpen"
+        v-model:visible="visible"
         header="Import Documents"
         class="w-full sm:w-[60rem]"
         position="right"
-        @hide="handleHidden"
     >
         <div class="flex flex-col gap-6">
             <div class="flex flex-col gap-2">

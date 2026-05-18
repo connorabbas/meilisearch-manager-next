@@ -4,8 +4,8 @@ import { useTasks } from '@/composables/meilisearch/useTasks'
 import { useIndexes } from '@/composables/meilisearch/useIndexes'
 import { Home, Info } from '@lucide/vue'
 import type { Task, TasksOrBatchesQuery } from 'meilisearch'
-import { Mode } from 'vanilla-jsoneditor'
 import { formatDate, getStatusSeverity } from '@/utils'
+import TaskDetailsDrawer from '@/components/meilisearch/TaskDetailsDrawer.vue'
 
 definePageMeta({
     layout: 'app',
@@ -77,13 +77,19 @@ await refreshTasksList(false)
 
 const indexUids = computed(() => indexes.value.map((index) => index.uid))
 
-const showTaskDrawerOpen = ref(false)
 const currentTask = ref<Task | null>(null)
-const taskHeaderTitle = computed(() => `Task ${currentTask.value?.uid}`)
+const taskDetailsDrawerOpen = ref(false)
 function showTask(task: Task) {
     currentTask.value = task
-    showTaskDrawerOpen.value = true
+    taskDetailsDrawerOpen.value = true
 }
+watch(taskDetailsDrawerOpen, (isOpen) => {
+    if (!isOpen) {
+        setTimeout(() => {
+            currentTask.value = null
+        }, 250)
+    }
+})
 
 watch(currentTasksQuery, async () => {
     await refreshTasksList()
@@ -108,25 +114,10 @@ onMounted(() => {
 
 <template>
     <div class="flex flex-col gap-4 md:gap-8">
-        <Teleport to="body">
-            <Drawer
-                v-model:visible="showTaskDrawerOpen"
-                :header="taskHeaderTitle"
-                class="w-full sm:w-[60rem]"
-                position="right"
-                @hide="currentTask = null"
-            >
-                <div>
-                    <ThemedJsonEditor
-                        v-model="currentTask"
-                        :mode="Mode.text"
-                        :main-menu-bar="false"
-                        :stringified="false"
-                        read-only
-                    />
-                </div>
-            </Drawer>
-        </Teleport>
+        <TaskDetailsDrawer
+            v-model:visible="taskDetailsDrawerOpen"
+            :task="currentTask"
+        />
 
         <PageTitleSection>
             <template #title>

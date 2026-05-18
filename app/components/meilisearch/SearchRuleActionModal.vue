@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import { useMeilisearchStore } from '@/stores/meilisearch'
 import { useIndexes } from '@/composables/meilisearch/useIndexes'
+import { useDocuments } from '@/composables/meilisearch/useDocuments'
 import { useDebounceFn } from '@vueuse/core'
 import type { SearchRuleAction, SearchRuleSelector, SearchRulePinAction, RecordAny } from 'meilisearch'
+import ThemedJsonViewer from '@/components/ThemedJsonViewer.vue'
 
 const visible = defineModel<boolean>('visible', { default: false })
 const action = defineModel<SearchRuleAction>('action', { required: true })
@@ -13,6 +15,7 @@ const emit = defineEmits<{
 
 const meilisearchStore = useMeilisearchStore()
 const { indexes, fetchAllIndexes } = useIndexes()
+const { document: fetchedDocument, isFetching: isFetchingDocument, fetchDocument } = useDocuments()
 
 const actionTypeOptions = [
     { label: 'Pin', value: 'pin' },
@@ -39,14 +42,16 @@ function resetForm() {
         selectedIndexUid.value = ''
     }
 
-    if (a.selector?.id) {
+    if (a.selector?.id && a.selector?.indexUid) {
         selectedDocumentId.value = a.selector.id
         documentQuery.value = String(a.selector.id)
         autoCompleteModel.value = documentQuery.value
+        fetchDocument(a.selector.indexUid, a.selector.id)
     } else {
         selectedDocumentId.value = null
         documentQuery.value = ''
         autoCompleteModel.value = ''
+        fetchedDocument.value = null
     }
 
     position.value = (a.action as SearchRulePinAction)?.position ?? 0
@@ -137,6 +142,21 @@ function handleCancel() {
     visible.value = false
 }
 
+function onIndexChange() {
+    selectedDocumentId.value = null
+    documentQuery.value = ''
+    autoCompleteModel.value = ''
+    fetchedDocument.value = null
+}
+
+watch([selectedIndexUid, selectedDocumentId], ([indexUid, docId]) => {
+    if (indexUid && docId) {
+        fetchDocument(indexUid, docId)
+    } else {
+        fetchedDocument.value = null
+    }
+})
+
 watch(visible, (isVisible) => {
     if (isVisible) {
         fetchAllIndexes()
@@ -177,6 +197,7 @@ watch(visible, (isVisible) => {
                     :options="indexes.map(i => i.uid)"
                     placeholder="Select an index"
                     fluid
+                    @change="onIndexChange"
                 />
             </div>
 
@@ -204,6 +225,19 @@ watch(visible, (isVisible) => {
                         </div>
                     </template>
                 </AutoComplete>
+
+                <div
+                    v-if="isFetchingDocument"
+                    class="text-sm text-muted-color"
+                >
+                    Loading document...
+                </div>
+                <div
+                    v-else-if="fetchedDocument"
+                    class="border dynamic-border rounded-border overflow-auto max-h-50"
+                >
+                    <ThemedJsonViewer :data="fetchedDocument" />
+                </div>
             </div>
 
             <div class="flex flex-col gap-2">
@@ -222,7 +256,7 @@ watch(visible, (isVisible) => {
             <div class="flex gap-4">
                 <Button
                     label="Cancel"
-                    plain
+                    severity="secondary"
                     text
                     @click="handleCancel"
                 />

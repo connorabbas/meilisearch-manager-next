@@ -10,6 +10,7 @@ export function useDocuments() {
     const meilisearchStore = useMeilisearchStore()
     const { pollTaskStatus } = useTasks()
 
+    const document = ref<RecordAny | null>(null)
     const isFetching = ref(false)
     const isLoading = ref(false)
     const isSendingTask = ref(false)
@@ -18,6 +19,31 @@ export function useDocuments() {
     const error = ref<string | null>(null)
 
     const isLoadingTask = computed(() => isSendingTask.value || isPollingTask.value)
+
+    async function fetchDocument(
+        indexUid: string,
+        documentId: string | number
+    ): Promise<RecordAny | undefined> {
+        const client = meilisearchStore.getClient()
+        if (!client) {
+            error.value = 'Meilisearch client not connected'
+            return
+        }
+
+        isFetching.value = true
+        error.value = null
+
+        try {
+            const result = await client.index(indexUid).getDocument(documentId)
+            document.value = result
+            return result
+        } catch (err) {
+            document.value = null
+            error.value = (err as Error).message
+        } finally {
+            isFetching.value = false
+        }
+    }
 
     async function addOrUpdateDocuments(
         action: 'addition' | 'update',
@@ -242,12 +268,14 @@ export function useDocuments() {
     })
 
     return {
+        document,
         isFetching,
         isLoading,
         isSendingTask,
         isPollingTask,
         isLoadingTask,
         error,
+        fetchDocument,
         addOrUpdateDocuments,
         addOrUpdateDocumentsFromString,
         confirmDeleteAllDocuments,

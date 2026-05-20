@@ -67,9 +67,25 @@ NUXT_MEILISEARCH_API_KEY=yourAdminApiKey
 **Typical deployment:** Host the app alongside your Meilisearch instance (same network/VPC, or behind the same reverse proxy) so the Nitro server can reach Meilisearch securely.
 
 > [!CAUTION]
-> **The single-instance proxy route has no built-in authentication.** The `/api/meilisearch/*` catch-all proxy injects the admin API key server-side, but the route itself accepts any request that reaches it.
+> **By default, the single-instance proxy route has no built-in authentication.** The `/api/meilisearch/*` catch-all proxy injects the admin API key server-side, but the route itself accepts any request that reaches it.
 >
-> **You MUST deploy this behind an authentication layer in production environments** (e.g., Traefik Basic Auth, VPN, Cloudflare Access) or restrict it to a private network. Exposing the app directly to the internet without authentication is equivalent to giving public admin access to your Meilisearch instance.
+> **You MUST deploy this behind an authentication layer in production environments** (e.g., Traefik Basic Auth, VPN, Cloudflare Access), enable the optional built-in auth (see below), or restrict it to a private network. Exposing the app directly to the internet without authentication is equivalent to giving public admin access to your Meilisearch instance.
+
+#### Optional Built-in Authentication
+
+For a minimal, self-contained setup, you can enable built-in authentication using `nuxt-auth-utils`:
+
+```env
+NUXT_AUTH_ENABLED=true
+NUXT_ADMIN_USERNAME=admin
+NUXT_ADMIN_PASSWORD=yourStrongPassword
+NUXT_SESSION_PASSWORD=a-random-password-with-at-least-32-characters
+```
+
+- Only applies in **single-instance mode**.
+- When enabled, all `/api/meilisearch/*` proxy requests and page visits require an authenticated session.
+- Users are redirected to a login page; sessions are stored in encrypted cookies.
+- If you prefer an external auth layer (e.g., Traefik Basic Auth), leave `NUXT_AUTH_ENABLED` unset or set it to `false`.
 
 ### Explicit Mode Control
 

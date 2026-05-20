@@ -2,7 +2,7 @@
 import { useAppLayout } from '@/composables/useAppLayout'
 import SelectColorModePopoverButton from '@/components/SelectColorModePopoverButton.vue'
 import ChangeInstanceModal from '@/components/meilisearch/ChangeInstanceModal.vue'
-import { ChevronsUpDown, Home, Menu as MenuIcon } from '@lucide/vue'
+import { ChevronsUpDown, Home, LogOut, Menu as MenuIcon } from '@lucide/vue'
 import Container from '@/components/Container.vue'
 import PopupMenuButton from '@/components/PopupMenuButton.vue'
 import LogoLink from '@/components/LogoLink.vue'
@@ -53,9 +53,30 @@ const onScroll = () => {
     isOpaque.value = window.scrollY > 10 // 10px scroll threshold
 }
 
+const authEnabled = ref(false)
+
+async function logout() {
+    try {
+        await $fetch('/api/logout', { method: 'POST' })
+    } catch {
+        // ignore errors
+    }
+    await useUserSession().clear()
+    await navigateTo('/login')
+}
+
 onMounted(() => {
     window.addEventListener('scroll', onScroll, { passive: true })
     onScroll() // run once in case the page is already scrolled
+
+    // Fetch whether built-in auth is enabled so we can show the logout button
+    $fetch<{ authEnabled: boolean }>('/api/config')
+        .then((config) => {
+            authEnabled.value = config.authEnabled
+        })
+        .catch(() => {
+            authEnabled.value = false
+        })
 })
 onUnmounted(() => {
     window.removeEventListener('scroll', onScroll)
@@ -77,22 +98,34 @@ onUnmounted(() => {
                     />
                 </div>
                 <template #footer>
-                    <SelectColorModeButton
-                        v-if="singleInstanceMode"
-                        :show-label="false"
-                    />
-                    <PopupMenuButton
-                        v-else
-                        name="mobile-meili-instance-dd"
-                        severity="secondary"
-                        size="large"
-                        :menu-items="meilisearchInstanceMenuItems"
-                        :label="currentMeilisearchIntanceName"
-                    >
-                        <template #icon>
-                            <ChevronsUpDown />
-                        </template>
-                    </PopupMenuButton>
+                    <div class="flex items-center gap-4">
+                        <SelectColorModeButton
+                            v-if="singleInstanceMode"
+                            :show-label="false"
+                        />
+                        <Button
+                            v-if="singleInstanceMode && authEnabled"
+                            label="Logout"
+                            severity="secondary"
+                            @click="logout"
+                        >
+                            <template #icon>
+                                <LogOut class="size-5!" />
+                            </template>
+                        </Button>
+                        <PopupMenuButton
+                            v-if="!singleInstanceMode"
+                            name="mobile-meili-instance-dd"
+                            severity="secondary"
+                            size="large"
+                            :menu-items="meilisearchInstanceMenuItems"
+                            :label="currentMeilisearchIntanceName"
+                        >
+                            <template #icon>
+                                <ChevronsUpDown />
+                            </template>
+                        </PopupMenuButton>
+                    </div>
                 </template>
             </Drawer>
             <ChangeInstanceModal v-model="changeInstanceModalOpen" />
@@ -123,6 +156,16 @@ onUnmounted(() => {
                                 <div class="hidden lg:flex items-center ms-6 space-x-4">
                                     <template v-if="singleInstanceMode">
                                         <SelectColorModeButton :show-label="false" />
+                                        <Button
+                                            v-if="authEnabled"
+                                            v-tooltip.left="'Logout'"
+                                            severity="secondary"
+                                            @click="logout"
+                                        >
+                                            <template #icon>
+                                                <LogOut class="size-5!" />
+                                            </template>
+                                        </Button>
                                     </template>
                                     <template v-else>
                                         <SelectColorModePopoverButton

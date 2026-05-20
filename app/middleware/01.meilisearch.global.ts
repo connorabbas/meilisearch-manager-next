@@ -2,9 +2,30 @@ import { useMeilisearchStore } from '@/stores/meilisearch'
 
 export default defineNuxtRouteMiddleware(async (to) => {
     const meilisearchStore = useMeilisearchStore()
+    const { loggedIn } = useUserSession()
 
+    if (to.path === '/login') {
+        return
+    }
+
+    // If the store hasn't finished initializing yet, we can't make routing decisions
     if (!meilisearchStore.initialized) {
         return
+    }
+
+    // In single-instance mode with auth enabled, don't try to connect until authenticated
+    if (meilisearchStore.singleInstanceMode) {
+        let authEnabled = false
+        try {
+            const config = await $fetch<{ authEnabled: boolean }>('/api/config')
+            authEnabled = config.authEnabled
+        } catch {
+            authEnabled = false
+        }
+
+        if (authEnabled && !loggedIn.value) {
+            return navigateTo('/login', { replace: true })
+        }
     }
 
     if (to.path === '/new-instance') {

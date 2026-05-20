@@ -80,9 +80,22 @@ The `node` images run the single-instance proxy mode behind a Nitro server. The 
 ### Security Warning
 
 > [!CAUTION]
-> **The single-instance proxy route has no built-in authentication.** The `/api/meilisearch/*` catch-all proxy injects the admin API key server-side, but the route itself accepts any request that reaches it.
+> **By default, the single-instance proxy route has no built-in authentication.** The `/api/meilisearch/*` catch-all proxy injects the admin API key server-side, but the route itself accepts any request that reaches it.
 >
-> **You MUST deploy this behind an authentication layer in production environments** (e.g., Traefik Basic Auth, VPN, Cloudflare Access) or restrict it to a private network. Exposing the node image directly to the internet without authentication is equivalent to giving public admin access to your Meilisearch instance.
+> **You MUST deploy this behind an authentication layer in production environments** (e.g., Traefik Basic Auth, VPN, Cloudflare Access), enable the optional built-in auth, or restrict it to a private network. Exposing the node image directly to the internet without authentication is equivalent to giving public admin access to your Meilisearch instance.
+
+#### Optional Built-in Authentication
+
+You can enable a minimal login layer directly in the app so you don't need an external reverse-proxy auth mechanism:
+
+```env
+NUXT_AUTH_ENABLED=true
+NUXT_ADMIN_USERNAME=admin
+NUXT_ADMIN_PASSWORD=yourStrongPassword
+NUXT_SESSION_PASSWORD=a-random-password-with-at-least-32-characters
+```
+
+When enabled, all proxy requests require an authenticated session and unauthenticated users are redirected to `/login`.
 
 ### Docker Compose
 

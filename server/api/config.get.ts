@@ -9,6 +9,8 @@ export default defineEventHandler((event) => {
 
     const explicitMode = String(config.secureMode).toLowerCase()
 
+    let secureMode: boolean
+
     // Explicit true -> strict validation
     if (explicitMode === 'true') {
         if (!config.meilisearchHost || !config.meilisearchApiKey) {
@@ -20,14 +22,16 @@ export default defineEventHandler((event) => {
                 },
             })
         }
-        return { secureMode: true }
+        secureMode = true
+    } else if (explicitMode === 'false') {
+        // Explicit false -> force multi-instance
+        secureMode = false
+    } else {
+        // 'auto' (or omitted) -> auto-detect based on credentials presence
+        secureMode = Boolean(config.meilisearchHost && config.meilisearchApiKey)
     }
 
-    // Explicit false -> force multi-instance
-    if (explicitMode === 'false') {
-        return { secureMode: false }
-    }
+    const authEnabled = secureMode && config.authEnabled
 
-    // 'auto' (or omitted) -> auto-detect based on credentials presence
-    return { secureMode: Boolean(config.meilisearchHost && config.meilisearchApiKey) }
+    return { secureMode, authEnabled }
 })

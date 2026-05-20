@@ -17,7 +17,7 @@ export default defineNuxtConfig({
     compatibilityDate: '2025-07-15',
     css: ['maplibre-gl/dist/maplibre-gl.css', '~/assets/css/main.css'],
     devtools: { enabled: false },
-    modules: ['@primevue/nuxt-module', '@nuxt/fonts', '@pinia/nuxt', '@nuxt/eslint', 'nuxt-maplibre'],
+    modules: ['@primevue/nuxt-module', '@nuxt/fonts', '@pinia/nuxt', '@nuxt/eslint', 'nuxt-maplibre', 'nuxt-auth-utils'],
     nitro: {
         prerender: {
             crawlLinks: false,
@@ -29,6 +29,9 @@ export default defineNuxtConfig({
         secureMode: 'auto',
         meilisearchHost: '',
         meilisearchApiKey: '',
+        authEnabled: false,
+        adminUsername: 'admin',
+        adminPassword: '',
         public: {
             staticDeploy: false,
         },

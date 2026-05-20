@@ -3,10 +3,12 @@ import { joinURL, withoutBase } from 'ufo'
 
 /**
  * WARNING: This catch-all proxy forwards ALL requests to the Meilisearch
- * instance with the admin API key injected server-side. There is NO
- * authentication or authorization in this handler.
+ * instance with the admin API key injected server-side.
  *
- * This route MUST be protected by external means:
+ * When NUXT_AUTH_ENABLED is true, this handler requires an authenticated
+ * session. Otherwise, there is NO built-in authentication.
+ *
+ * If auth is disabled, this route MUST be protected by external means:
  * - Traefik Basic Auth (or similar reverse proxy auth)
  * - VPN / private network
  * - IP restrictions
@@ -19,6 +21,10 @@ export default defineEventHandler(async (event) => {
     const config = useRuntimeConfig(event)
     const host = config.meilisearchHost
     const apiKey = config.meilisearchApiKey
+
+    if (config.authEnabled) {
+        await requireUserSession(event)
+    }
 
     if (!host || !apiKey) {
         throw createError({

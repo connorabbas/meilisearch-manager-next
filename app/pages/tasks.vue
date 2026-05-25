@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import { useInfiniteScroll, useIntervalFn, useStorage } from '@vueuse/core'
-import { useTasks } from '@/composables/meilisearch/useTasks'
+import { useTasks, TASK_TYPES, TASK_STATUSES } from '@/composables/meilisearch/useTasks'
 import { useIndexes } from '@/composables/meilisearch/useIndexes'
-import { Home, Info } from '@lucide/vue'
+import { Home, Info, Trash2 } from '@lucide/vue'
 import type { Task, TasksOrBatchesQuery } from 'meilisearch'
 import { formatDate, getStatusSeverity } from '@/utils'
 import TaskDetailsDrawer from '@/components/meilisearch/TaskDetailsDrawer.vue'
+import DeleteTasksModal from '@/components/meilisearch/DeleteTasksModal.vue'
 
 definePageMeta({
     layout: 'app',
@@ -13,7 +14,7 @@ definePageMeta({
     breadcrumbs: [{ route: { name: 'dashboard' }, lucideIcon: Home }, { label: 'Tasks' }]
 })
 
-const { tasks, isFetching: isFetchingTasks, isPollingLatest, hasMore, fetchTasks, fetchAndAppendTasks, pollLatestTasks } = useTasks()
+const { tasks, isFetching: isFetchingTasks, isPollingLatest, hasMore, fetchTasks, fetchAndAppendTasks, pollLatestTasks, deleteTasksQuery, isDeletingTasks, deleteTasks } = useTasks()
 const { indexes, isFetching: isFetchingIndexes, fetchAllIndexes } = useIndexes()
 const tasksPollingEnabled = useStorage<boolean>('meilisearch-tasks-polling-enabled', false)
 
@@ -79,9 +80,22 @@ const indexUids = computed(() => indexes.value.map((index) => index.uid))
 
 const currentTask = ref<Task | null>(null)
 const taskDetailsDrawerOpen = ref(false)
+const deleteTasksModalOpen = ref(false)
+
 function showTask(task: Task) {
     currentTask.value = task
     taskDetailsDrawerOpen.value = true
+}
+
+async function handleDeleteTasks() {
+    try {
+        const result = await deleteTasks()
+        if (result) {
+            await refreshTasksList()
+        }
+    } catch {
+        // Error already handled by useTasks composable via toast
+    }
 }
 watch(taskDetailsDrawerOpen, (isOpen) => {
     if (!isOpen) {
@@ -114,6 +128,12 @@ onMounted(() => {
 
 <template>
     <div class="flex flex-col gap-4 md:gap-8">
+        <DeleteTasksModal
+            v-model:visible="deleteTasksModalOpen"
+            v-model:query="deleteTasksQuery"
+            @submit="handleDeleteTasks"
+        />
+
         <TaskDetailsDrawer
             v-model:visible="taskDetailsDrawerOpen"
             :task="currentTask"
@@ -145,12 +165,6 @@ onMounted(() => {
                         />
                     </div>
                     <div>
-                        <RefreshButton
-                            :loading="isFetchingTasks"
-                            @click="refreshTasksList()"
-                        />
-                    </div>
-                    <div>
                         <InputGroup>
                             <InputGroupAddon>
                                 Limit
@@ -160,6 +174,25 @@ onMounted(() => {
                                 :options="[20, 50, 100, 500]"
                             />
                         </InputGroup>
+                    </div>
+                    <div>
+                        <RefreshButton
+                            :loading="isFetchingTasks"
+                            @click="refreshTasksList()"
+                        />
+                    </div>
+                    <div>
+                        <Button
+                            label="Delete"
+                            severity="danger"
+                            outlined
+                            :loading="isDeletingTasks"
+                            @click="deleteTasksModalOpen = true"
+                        >
+                            <template #icon>
+                                <Trash2 />
+                            </template>
+                        </Button>
                     </div>
                 </div>
             </template>
@@ -191,13 +224,7 @@ onMounted(() => {
                                 v-model="tasksParams.statuses"
                                 pt:label:class="flex flex-wrap"
                                 pt:overlay:class="z-1!"
-                                :options="[
-                                    'enqueued',
-                                    'processing',
-                                    'succeeded',
-                                    'failed',
-                                    'canceled',
-                                ]"
+                                :options="[...TASK_STATUSES]"
                                 display="chip"
                                 placeholder="Any"
                                 :showToggleAll="false"
@@ -230,21 +257,7 @@ onMounted(() => {
                                 v-model="tasksParams.types"
                                 pt:label:class="flex flex-wrap"
                                 pt:overlay:class="z-1!"
-                                :options="[
-                                    'documentAdditionOrUpdate',
-                                    'documentEdition',
-                                    'documentDeletion',
-                                    'settingsUpdate',
-                                    'indexCreation',
-                                    'indexDeletion',
-                                    'indexUpdate',
-                                    'indexSwap',
-                                    'taskCancelation',
-                                    'taskDeletion',
-                                    'dumpCreation',
-                                    'snapshotCreation',
-                                    'upgradeDatabase',
-                                ]"
+                                :options="[...TASK_TYPES]"
                                 display="chip"
                                 placeholder="Any"
                                 :showToggleAll="false"

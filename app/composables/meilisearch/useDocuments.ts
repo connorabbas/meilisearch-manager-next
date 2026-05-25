@@ -183,6 +183,7 @@ export function useDocuments() {
             rejectProps: {
                 label: 'Cancel',
                 severity: 'secondary',
+                text: true,
             },
             acceptProps: {
                 label: 'Delete',
@@ -243,6 +244,7 @@ export function useDocuments() {
             rejectProps: {
                 label: 'Cancel',
                 severity: 'secondary',
+                text: true,
             },
             acceptProps: {
                 label: 'Delete',

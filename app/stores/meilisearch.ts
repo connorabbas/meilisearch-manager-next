@@ -205,6 +205,7 @@ export const useMeilisearchStore = defineStore('meilisearch', () => {
             rejectProps: {
                 label: 'Cancel',
                 severity: 'secondary',
+                text: true,
             },
             acceptProps: {
                 label: 'Remove',

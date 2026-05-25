@@ -1,6 +1,31 @@
 import { useToast } from 'primevue/usetoast'
 import { useMeilisearchStore } from '@/stores/meilisearch'
-import type { Task, TasksOrBatchesQuery, TasksResults } from 'meilisearch'
+import type { Task, TasksOrBatchesQuery, TasksResults, DeleteOrCancelTasksQuery, TaskType, TaskStatus, EnqueuedTask } from 'meilisearch'
+
+export const TASK_TYPES = [
+    'documentAdditionOrUpdate',
+    'documentEdition',
+    'documentDeletion',
+    'settingsUpdate',
+    'indexCreation',
+    'indexDeletion',
+    'indexUpdate',
+    'indexSwap',
+    'taskCancelation',
+    'taskDeletion',
+    'dumpCreation',
+    'snapshotCreation',
+    'upgradeDatabase',
+    'networkTopologyChange',
+] as const satisfies readonly TaskType[]
+
+export const TASK_STATUSES = [
+    'enqueued',
+    'processing',
+    'succeeded',
+    'failed',
+    'canceled',
+] as const satisfies readonly TaskStatus[]
 
 function normalizeTasksQuery(params?: TasksOrBatchesQuery): TasksOrBatchesQuery {
     const normalized: TasksOrBatchesQuery = {
@@ -52,6 +77,8 @@ export function useTasks() {
     const hasMore = ref(false)
     const currentQuery = ref<TasksOrBatchesQuery>({})
     const nextCursor = ref<TasksResults['next']>(null)
+    const deleteTasksQuery = ref<DeleteOrCancelTasksQuery>({})
+    const isDeletingTasks = ref(false)
     let listRequestVersion = 0
 
     async function fetchTasks(params?: TasksOrBatchesQuery): Promise<TasksResults | undefined> {
@@ -245,6 +272,34 @@ export function useTasks() {
         }
     }
 
+    async function deleteTasks(): Promise<EnqueuedTask | undefined> {
+        const client = meilisearchStore.getClient()
+        if (!client) {
+            error.value = 'Meilisearch client not connected'
+            return
+        }
+
+        isDeletingTasks.value = true
+        error.value = null
+
+        try {
+            const enqueuedTask = await client.tasks.deleteTasks(deleteTasksQuery.value)
+
+            await pollTaskStatus(
+                enqueuedTask.taskUid,
+                `A delete tasks job has been enqueued (taskUid: ${enqueuedTask.taskUid})`,
+                'Tasks matching the filter have been successfully deleted',
+            )
+
+            return enqueuedTask
+        } catch (err) {
+            error.value = (err as Error).message
+            throw err
+        } finally {
+            isDeletingTasks.value = false
+        }
+    }
+
     watch(error, (newError) => {
         if (newError) {
             toast.add({
@@ -264,9 +319,12 @@ export function useTasks() {
         isPollingLatest,
         hasMore,
         checkingTaskStatus,
+        deleteTasksQuery,
+        isDeletingTasks,
         fetchTasks,
         fetchAndAppendTasks,
         pollLatestTasks,
         pollTaskStatus,
+        deleteTasks,
     }
 }

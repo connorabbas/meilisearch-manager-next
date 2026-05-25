@@ -1,3 +1,4 @@
+import type { TaskStatus } from 'meilisearch'
 import { twMerge } from 'tailwind-merge'
 
 export const ptViewMerge = (
@@ -52,7 +53,7 @@ export function maskedApiKey(
     return `${start}****${end}`
 }
 
-export function getStatusSeverity(status: string) {
+export function getStatusSeverity(status: TaskStatus) {
     switch (status) {
     case 'succeeded':
         return 'success'

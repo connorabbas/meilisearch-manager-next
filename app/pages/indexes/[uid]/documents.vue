@@ -53,6 +53,7 @@ const {
 } = useSearch()
 
 const primaryKey = computed(() => currentIndex.value?.primaryKey)
+const totalHitsString = computed(() => `${searchResults.value?.estimatedTotalHits?.toLocaleString('en-US')} total hits`)
 
 async function fetchData() {
     await Promise.all([
@@ -354,6 +355,12 @@ onMounted(() => {
                                 @keyup.enter="searchPaginated(indexUid, true)"
                             />
                         </IconField>
+                    </div>
+                    <div>
+                        <Chip
+                            :label="totalHitsString"
+                            class="text-muted-color-emphasis"
+                        />
                     </div>
                     <div class="flex justify-end gap-4">
                         <div>

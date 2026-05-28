@@ -503,6 +503,39 @@ onMounted(() => {
                         alignFrozen="left"
                     />
                     <Column
+                        v-if="showRankingScore"
+                        header="Ranking Score"
+                        frozen
+                        alignFrozen="left"
+                    >
+                        <template #body="{ data }">
+                            <Tag
+                                v-if="data._rankingScore !== undefined"
+                                :value="`${Math.round(data._rankingScore * 100)}%`"
+                                :severity="getRankingScoreSeverity(data._rankingScore)"
+                            />
+                        </template>
+                    </Column>
+                    <Column
+                        v-if="showRankingScore"
+                        header="Ranking Score Details"
+                        frozen
+                        alignFrozen="left"
+                    >
+                        <template #body="{ data }">
+                            <Button
+                                v-if="data._rankingScoreDetails !== undefined"
+                                v-tooltip.top="'View Ranking Score Details'"
+                                class="p-0 text-inherit"
+                                severity="contrast"
+                                variant="link"
+                                @click="toggleTableFieldDetailPopover($event, '_rankingScoreDetails', data._rankingScoreDetails)"
+                            >
+                                View Details
+                            </Button>
+                        </template>
+                    </Column>
+                    <Column
                         v-for="fieldName in Object.keys(indexStats?.fieldDistribution ?? {})"
                         :key="fieldName"
                         :field="fieldName"
@@ -533,20 +566,6 @@ onMounted(() => {
                             >
                                 <span class="truncate w-auto max-w-[200px]">{{ data[fieldName] }}</span>
                             </Button>
-                        </template>
-                    </Column>
-                    <Column
-                        v-if="showRankingScore"
-                        header="Ranking Score"
-                        frozen
-                        alignFrozen="right"
-                    >
-                        <template #body="{ data }">
-                            <Tag
-                                v-if="data._rankingScore !== undefined"
-                                :value="`${Math.round(data._rankingScore * 100)}%`"
-                                :severity="getRankingScoreSeverity(data._rankingScore)"
-                            />
                         </template>
                     </Column>
                     <Column

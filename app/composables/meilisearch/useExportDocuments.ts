@@ -21,19 +21,27 @@ export function useExportDocuments() {
 
         const allDocuments: RecordAny[] = []
         let offset = 0
-        let total: number | undefined
+        const MAX_BATCHES = 100_000
 
-        while (true) {
+        for (let batch = 0; batch < MAX_BATCHES; batch++) {
             const response: ResourceResults<RecordAny[]> = await client
                 .index(indexUid)
                 .getDocuments({ limit: BATCH_SIZE, offset })
 
-            total = response.total
-            allDocuments.push(...response.results)
-
-            if (response.results.length < BATCH_SIZE || allDocuments.length >= total) {
+            if (!response.results?.length) {
                 break
             }
+
+            allDocuments.push(...response.results)
+
+            if (response.results.length < BATCH_SIZE) {
+                break
+            }
+
+            if (typeof response.total === 'number' && allDocuments.length >= response.total) {
+                break
+            }
+
             offset += BATCH_SIZE
         }
 

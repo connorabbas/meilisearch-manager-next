@@ -13,13 +13,13 @@ export function useExportDocuments() {
     const isExporting = ref(false)
     const error = ref<string | null>(null)
 
-    async function fetchAllDocuments(indexUid: string): Promise<RecordAny[]> {
+    async function getAllColumns(indexUid: string): Promise<string[]> {
         const client = meilisearchStore.getClient()
         if (!client) {
             throw new Error('Meilisearch client not connected')
         }
 
-        const allDocuments: RecordAny[] = []
+        const columns = new Set<string>()
         let offset = 0
         const MAX_BATCHES = 100_000
 
@@ -32,26 +32,30 @@ export function useExportDocuments() {
                 break
             }
 
-            allDocuments.push(...response.results)
+            for (const doc of response.results) {
+                for (const key of Object.keys(doc)) {
+                    columns.add(key)
+                }
+            }
 
             if (response.results.length < BATCH_SIZE) {
                 break
             }
 
-            if (typeof response.total === 'number' && allDocuments.length >= response.total) {
+            if (typeof response.total === 'number' && (offset + response.results.length) >= response.total) {
                 break
             }
 
             offset += BATCH_SIZE
         }
 
-        return allDocuments
+        return Array.from(columns)
     }
 
     async function exportDocuments(
         indexUid: string,
         format: 'json' | 'csv',
-        filename?: string
+        filename?: string,
     ) {
         const client = meilisearchStore.getClient()
         if (!client) {
@@ -63,28 +67,100 @@ export function useExportDocuments() {
         error.value = null
 
         try {
-            const documents = await fetchAllDocuments(indexUid)
-
             const safeFilename = filename || `${indexUid}-documents`
+            let totalDocs = 0
+            let offset = 0
+            const MAX_BATCHES = 100_000
 
             if (format === 'json') {
-                let jsonString = JSON.stringify(documents, null, 2)
-                // Escape literal line/paragraph separators so editors don't flag "unusual line terminators"
-                jsonString = jsonString.replace(/\u2028/g, '\\u2028').replace(/\u2029/g, '\\u2029')
-                const blob = new Blob([jsonString], { type: 'application/json' })
+                const parts: string[] = []
+                parts.push('[\n')
+                let isFirstBatch = true
+
+                for (let batch = 0; batch < MAX_BATCHES; batch++) {
+                    const response: ResourceResults<RecordAny[]> = await client
+                        .index(indexUid)
+                        .getDocuments({ limit: BATCH_SIZE, offset })
+
+                    if (!response.results?.length) {
+                        break
+                    }
+
+                    let batchStr = JSON.stringify(response.results, null, 2)
+                    // Escape literal line/paragraph separators so editors don't flag "unusual line terminators"
+                    batchStr = batchStr.replace(/\u2028/g, '\\u2028').replace(/\u2029/g, '\\u2029')
+
+                    const lines = batchStr.split('\n')
+                    lines.shift() // remove '['
+                    lines.pop() // remove ']'
+                    const content = lines.join('\n')
+
+                    if (!isFirstBatch) {
+                        parts.push(',\n')
+                    }
+                    parts.push(content)
+                    isFirstBatch = false
+
+                    totalDocs += response.results.length
+
+                    if (response.results.length < BATCH_SIZE) {
+                        break
+                    }
+
+                    if (typeof response.total === 'number' && totalDocs >= response.total) {
+                        break
+                    }
+
+                    offset += BATCH_SIZE
+                }
+
+                parts.push('\n]')
+                const blob = new Blob(parts, { type: 'application/json' })
                 downloadFile(blob, `${safeFilename}.json`)
             } else {
-                const csvString = Papa.unparse(documents)
-                // Strip literal line/paragraph separators so editors don't flag "unusual line terminators"
-                const sanitizedCsv = csvString.replace(/\u2028/g, '').replace(/\u2029/g, '')
-                const blob = new Blob([sanitizedCsv], { type: 'text/csv;charset=utf-8;' })
+                // CSV: two-pass to discover all columns without holding all docs in memory
+                const columns = await getAllColumns(indexUid)
+                const csvParts: string[] = []
+                offset = 0
+
+                for (let batch = 0; batch < MAX_BATCHES; batch++) {
+                    const response: ResourceResults<RecordAny[]> = await client
+                        .index(indexUid)
+                        .getDocuments({ limit: BATCH_SIZE, offset })
+
+                    if (!response.results?.length) {
+                        break
+                    }
+
+                    const csvStr = Papa.unparse(response.results, {
+                        columns,
+                        header: batch === 0,
+                    })
+                    // Strip literal line/paragraph separators so editors don't flag "unusual line terminators"
+                    const sanitizedCsv = csvStr.replace(/\u2028/g, '').replace(/\u2029/g, '')
+                    csvParts.push(sanitizedCsv)
+
+                    totalDocs += response.results.length
+
+                    if (response.results.length < BATCH_SIZE) {
+                        break
+                    }
+
+                    if (typeof response.total === 'number' && totalDocs >= response.total) {
+                        break
+                    }
+
+                    offset += BATCH_SIZE
+                }
+
+                const blob = new Blob(csvParts, { type: 'text/csv;charset=utf-8;' })
                 downloadFile(blob, `${safeFilename}.csv`)
             }
 
             toast.add({
                 severity: 'success',
                 summary: 'Export Complete',
-                detail: `${documents.length} document${documents.length === 1 ? '' : 's'} exported as ${format.toUpperCase()}`,
+                detail: `${totalDocs} document${totalDocs === 1 ? '' : 's'} exported as ${format.toUpperCase()}`,
                 life: 5000,
             })
         } catch (err) {

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Astroid, EllipsisVertical, Funnel, Pencil, Plus, Search, Trash2, Trophy } from '@lucide/vue'
+import { Astroid, Download, EllipsisVertical, Funnel, Pencil, Plus, Search, Trash2, Trophy } from '@lucide/vue'
 import type { IndexEmbedderOption, MenuItem } from '@/types'
 import { useDebounceFn } from '@vueuse/core'
 import { useSearch } from '@/composables/meilisearch/useSearch'
@@ -11,6 +11,7 @@ import type { Embedder, RecordAny } from 'meilisearch'
 import DocumentHitJsonRow from '@/components/meilisearch/DocumentHitJsonRow.vue'
 import Menu from '@/components/router-link-menus/Menu.vue'
 import ImportDocumentsDrawer from '@/components/meilisearch/ImportDocumentsDrawer.vue'
+import ExportDocumentsModal from '@/components/meilisearch/ExportDocumentsModal.vue'
 import EditDocumentDrawer from '@/components/meilisearch/EditDocumentDrawer.vue'
 import FilterDocumentsDrawer from '@/components/meilisearch/FilterDocumentsDrawer.vue'
 import DocumentsGeoMap from '@/components/meilisearch/DocumentsGeoMap.vue'
@@ -135,6 +136,9 @@ watch(searchFilter, () => {
 
 // Create Drawer
 const showImportDocumentsDrawerOpen = ref(false)
+
+// Export Modal
+const exportDocumentsModalOpen = ref(false)
 
 // Edit / Details Drawer
 const editDocumentDrawerOpen = ref(false)
@@ -293,14 +297,26 @@ onMounted(() => {
 <template>
     <div class="flex flex-col gap-4 md:gap-8">
         <Teleport to="#index-page-actions">
-            <Button
-                label="Import Documents"
-                @click="showImportDocumentsDrawerOpen = true"
-            >
-                <template #icon>
-                    <Plus />
-                </template>
-            </Button>
+            <div class="flex gap-3">
+                <Button
+                    v-if="indexStats?.numberOfDocuments"
+                    label="Export Documents"
+                    severity="secondary"
+                    @click="exportDocumentsModalOpen = true"
+                >
+                    <template #icon>
+                        <Download />
+                    </template>
+                </Button>
+                <Button
+                    label="Import Documents"
+                    @click="showImportDocumentsDrawerOpen = true"
+                >
+                    <template #icon>
+                        <Plus />
+                    </template>
+                </Button>
+            </div>
         </Teleport>
 
         <Teleport to="body">
@@ -310,6 +326,10 @@ onMounted(() => {
                     :index-uid="indexUid"
                     :primary-key="currentIndex?.primaryKey"
                     @documents-imported="fetchData"
+                />
+                <ExportDocumentsModal
+                    v-model:visible="exportDocumentsModalOpen"
+                    :index-uid="indexUid"
                 />
                 <EditDocumentDrawer
                     v-model:visible="editDocumentDrawerOpen"

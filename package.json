@@ -24,6 +24,7 @@
         "meilisearch": "^0.58.0",
         "nuxt": "^4.4.2",
         "nuxt-maplibre": "^1.2.2",
+        "papaparse": "^5.5.3",
         "primevue": "^4.5.4",
         "tailwind-merge": "^3.5.0",
         "tailwindcss": "^4.2.2",
@@ -37,6 +38,7 @@
         "@primevue/nuxt-module": "^4.5.4",
         "@tailwindcss/vite": "^4.2.2",
         "@types/node": "^25.5.2",
+        "@types/papaparse": "^5.5.2",
         "@vue/language-core": "^3.2.6",
         "vue-tsc": "^3.2.6"
     }

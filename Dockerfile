@@ -10,9 +10,10 @@ RUN apt-get update && apt-get install -y \
     curl \
     ca-certificates \
     && rm -rf /var/lib/apt/lists/*
-RUN npm install -g opencode-ai
 
 USER node
+RUN curl -fsSL https://opencode.ai/install | bash -s -- --no-modify-path
+ENV PATH=/home/node/.opencode/bin:$PATH
 
 COPY --chown=node:node .devcontainer/.bashrc /home/node/.bashrc
 RUN git config --global --add safe.directory /workspace

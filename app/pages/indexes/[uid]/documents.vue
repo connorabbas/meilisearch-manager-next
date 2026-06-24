@@ -524,6 +524,14 @@ onMounted(() => {
                     />
                     <Column
                         v-if="showRankingScore"
+                        :pt="{
+                            headerCell: {
+                                class: 'dynamic-bg z-2'
+                            },
+                            bodyCell: {
+                                class: 'dynamic-bg z-1'
+                            }
+                        }"
                         header="Ranking Score"
                         frozen
                         alignFrozen="left"
@@ -538,6 +546,14 @@ onMounted(() => {
                     </Column>
                     <Column
                         v-if="showRankingScore"
+                        :pt="{
+                            headerCell: {
+                                class: 'dynamic-bg z-2'
+                            },
+                            bodyCell: {
+                                class: 'dynamic-bg z-1'
+                            }
+                        }"
                         header="Ranking Score Details"
                         frozen
                         alignFrozen="left"

@@ -5,7 +5,6 @@ import { Mode } from 'vanilla-jsoneditor'
 import ThemedJsonEditor from '../ThemedJsonEditor.vue'
 import { useDocuments } from '@/composables/meilisearch/useDocuments'
 import FileUpload, { type FileUploadSelectEvent } from 'primevue/fileupload'
-import { readFileAsText } from '@/utils'
 
 const props = defineProps<{
     indexUid: string,
@@ -16,10 +15,10 @@ const emit = defineEmits(['documents-imported'])
 
 const visible = defineModel<boolean>('visible', { default: false })
 
-const { addOrUpdateDocuments, addOrUpdateDocumentsFromString, isSendingTask, error } = useDocuments()
+const { addOrUpdateDocuments, addOrUpdateDocumentsFromFile, isSendingTask, error } = useDocuments()
 
 const newDocuments = ref<RecordAny[]>([])
-const newDocumentsAsString = ref('')
+const newDocumentsFile = ref<File | null>(null)
 
 const importMethod = ref<'upload' | 'manual'>('upload')
 const importMode = ref<'addition' | 'update'>('addition')
@@ -37,28 +36,27 @@ const uploadOptions = [
 type FileUploadType = InstanceType<typeof FileUpload>;
 const fileUploader = useTemplateRef<FileUploadType>('document-file-uploader')
 const fileUploaderChanged = ref(0)
-async function handleUpload(event: FileUploadSelectEvent) {
+function handleUpload(event: FileUploadSelectEvent) {
     const files: File[] = event.files as File[]
     const file = files[0]
     if (!file) {
         return
     }
 
-    const fileText = await readFileAsText(file)
-    newDocumentsAsString.value = fileText
+    newDocumentsFile.value = file
 }
 function handleUploaderReset() {
-    newDocumentsAsString.value = ''
+    newDocumentsFile.value = null
     fileUploaderChanged.value++
 }
 
 const jsonError = ref('')
 const btnDisabled = computed(() => {
-    if (jsonError.value) {
+    if (importMethod.value === 'manual' && jsonError.value) {
         return true
     }
     if (importMethod.value === 'upload') {
-        return newDocumentsAsString.value?.length === 0
+        return newDocumentsFile.value === null
     } else if (importMethod.value === 'manual') {
         return newDocuments.value?.length === 0
     }
@@ -66,19 +64,22 @@ const btnDisabled = computed(() => {
 })
 
 async function handleSaveDocument() {
-    if (importMethod.value === 'manual') {
-        // TODO: handle JSON errors (reference settings)
-        addOrUpdateDocuments(importMode.value, props.indexUid, newDocuments.value, props.primaryKey)
-            .then(() => {
-                visible.value = false
-                emit('documents-imported')
-            })
-    } else {
-        addOrUpdateDocumentsFromString(importMode.value, props.indexUid, newDocumentsAsString.value, uploadContentType.value)
-            .then(() => {
-                visible.value = false
-                emit('documents-imported')
-            })
+    try {
+        if (importMethod.value === 'manual') {
+            // TODO: handle JSON errors (reference settings)
+            await addOrUpdateDocuments(importMode.value, props.indexUid, newDocuments.value, props.primaryKey)
+        } else {
+            if (!newDocumentsFile.value) {
+                return
+            }
+
+            await addOrUpdateDocumentsFromFile(importMode.value, props.indexUid, newDocumentsFile.value, uploadContentType.value)
+        }
+
+        visible.value = false
+        emit('documents-imported')
+    } catch {
+        // useDocuments already exposes import failures through error state and toast.
     }
 }
 
@@ -87,7 +88,8 @@ function reset() {
     importMode.value = 'addition'
     uploadContentType.value = 'application/json'
     newDocuments.value = []
-    newDocumentsAsString.value = ''
+    newDocumentsFile.value = null
+    jsonError.value = ''
 }
 
 watch(visible, (isVisible) => {
@@ -195,6 +197,7 @@ watch(uploadContentType, (newVal) => {
                                     :fileLimit="1"
                                     :showUploadButton="false"
                                     :showCancelButton="false"
+                                    :maxFileSize="100000000"
                                     :pt="{
                                         header: { class: 'pb-0' },
                                         content: { class: 'pt-4 mt-4' },

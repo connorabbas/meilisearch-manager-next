@@ -3,21 +3,21 @@ export default defineNuxtRouteMiddleware(async (to) => {
     const { loggedIn, fetch: refreshSession } = useUserSession()
 
     // If the store knows we're in multi-instance mode, skip auth entirely
-    if (meilisearchStore.initialized && !meilisearchStore.singleInstanceMode) {
+    if (meilisearchStore.initialized && !meilisearchStore.isSingleInstanceProxyMode) {
         return
     }
 
     // Fetch config to determine mode and whether auth is enabled
-    let config: { secureMode: boolean; authEnabled: boolean }
+    let config: { singleInstanceProxyMode: boolean; authEnabled: boolean }
     try {
-        config = await $fetch<{ secureMode: boolean; authEnabled: boolean }>('/api/config')
+        config = await $fetch<{ singleInstanceProxyMode: boolean; authEnabled: boolean }>('/api/config')
     } catch {
         // If config fails, assume auth is off to avoid lockouts
         return
     }
 
     // Auth only applies in single-instance mode when enabled
-    if (!config.secureMode || !config.authEnabled) {
+    if (!config.singleInstanceProxyMode || !config.authEnabled) {
         return
     }
 

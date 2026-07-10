@@ -1,5 +1,6 @@
 import { getRequestURL, proxyRequest } from 'h3'
 import { joinURL, withoutBase } from 'ufo'
+import { resolveAuthConfig } from '../../utils/auth'
 
 /**
  * WARNING: This catch-all proxy forwards ALL requests to the Meilisearch
@@ -21,8 +22,9 @@ export default defineEventHandler(async (event) => {
     const config = useRuntimeConfig(event)
     const host = config.meilisearchHost
     const apiKey = config.meilisearchApiKey
+    const { authEnabled } = resolveAuthConfig(config)
 
-    if (config.authEnabled) {
+    if (authEnabled) {
         await requireUserSession(event)
     }
 

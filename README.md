@@ -65,12 +65,12 @@ NUXT_MEILISEARCH_API_KEY=yourAdminApiKey
 - Instance management UI is disabled (single pre-configured instance only)
 - Eliminates CORS concerns (browser talks to same-origin proxy)
 - **Requires a running Nitro server (Node environment)** - cannot be used with static hosting
-- Does **not** provide authentication by itself; protect the app with external auth or private networking
+- Provides optional built-in authentication; otherwise protect the app with external auth or private networking
 
 **Typical deployment:** Host the app alongside your Meilisearch instance (same network/VPC, or behind the same reverse proxy) so the Nitro server can reach Meilisearch securely.
 
 > [!CAUTION]
-> **Single-Instance Proxy Mode has no built-in authentication.** The `/api/meilisearch/*` catch-all proxy injects the admin API key server-side, but the route itself accepts any request that reaches it.
+> **Single-Instance Proxy Mode has no authentication unless you enable it.** The `/api/meilisearch/*` catch-all proxy injects the admin API key server-side. When built-in auth is disabled, the route accepts any request that reaches it.
 >
 > **You MUST deploy this behind an authentication layer in production environments** (e.g., Traefik Basic Auth, VPN, Cloudflare Access), enable the optional built-in auth (see below), or restrict it to a private network. Exposing the app directly to the internet without authentication is equivalent to giving public admin access to your Meilisearch instance.
 

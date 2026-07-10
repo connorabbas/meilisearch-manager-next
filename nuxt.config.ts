@@ -17,7 +17,7 @@ export default defineNuxtConfig({
     compatibilityDate: '2025-07-15',
     css: ['maplibre-gl/dist/maplibre-gl.css', '~/assets/css/main.css'],
     devtools: { enabled: false },
-    modules: ['@primevue/nuxt-module', '@nuxt/fonts', '@pinia/nuxt', '@nuxt/eslint', 'nuxt-maplibre', 'nuxt-auth-utils'],
+    modules: ['@primevue/nuxt-module', '@nuxt/fonts', '@pinia/nuxt', '@nuxt/eslint', 'nuxt-maplibre', 'nuxt-auth-utils', 'nuxt-security'],
     nitro: {
         prerender: {
             crawlLinks: false,
@@ -34,6 +34,31 @@ export default defineNuxtConfig({
         adminPassword: '',
         public: {
             staticDeploy: false,
+        },
+    },
+    security: {
+        headers: false,
+        requestSizeLimiter: false,
+        rateLimiter: false,
+        xssValidator: false,
+        corsHandler: false,
+        allowedMethodsRestricter: false,
+        hidePoweredBy: false,
+        csrf: false,
+        nonce: false,
+        removeLoggers: false,
+        ssg: false,
+        sri: false,
+    },
+    routeRules: {
+        '/api/login': {
+            security: {
+                rateLimiter: {
+                    tokensPerInterval: 5,
+                    interval: 15 * 60 * 1000,
+                    headers: true,
+                },
+            },
         },
     },
     primevue: {

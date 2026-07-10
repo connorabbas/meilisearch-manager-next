@@ -25,6 +25,7 @@
         "nuxt": "^4.4.2",
         "nuxt-auth-utils": "^0.5.29",
         "nuxt-maplibre": "^1.2.2",
+        "nuxt-security": "^2.5.1",
         "papaparse": "^5.5.3",
         "primevue": "^4.5.4",
         "tailwind-merge": "^3.5.0",

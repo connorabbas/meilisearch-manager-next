@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { resolveAuthConfig } from '../utils/auth'
 
 const bodySchema = z.object({
     username: z.string().min(1),
@@ -7,8 +8,9 @@ const bodySchema = z.object({
 
 export default defineEventHandler(async (event) => {
     const config = useRuntimeConfig(event)
+    const { authEnabled } = resolveAuthConfig(config)
 
-    if (!config.authEnabled) {
+    if (!authEnabled) {
         throw createError({
             status: 403,
             statusMessage: 'Authentication is disabled',

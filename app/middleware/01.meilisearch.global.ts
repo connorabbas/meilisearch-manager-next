@@ -14,7 +14,7 @@ export default defineNuxtRouteMiddleware(async (to) => {
     }
 
     // In single-instance mode with auth enabled, don't try to connect until authenticated
-    if (meilisearchStore.singleInstanceMode) {
+    if (meilisearchStore.isSingleInstanceProxyMode) {
         let authEnabled = false
         try {
             const config = await $fetch<{ authEnabled: boolean }>('/api/config')

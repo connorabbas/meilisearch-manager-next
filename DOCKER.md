@@ -80,7 +80,7 @@ The `node` images run Single-Instance Proxy Mode behind a Nitro server. This mod
 ### Security Warning
 
 > [!CAUTION]
-> **Single-Instance Proxy Mode has no built-in authentication.** The `/api/meilisearch/*` catch-all proxy injects the admin API key server-side, but the route itself accepts any request that reaches it.
+> **Single-Instance Proxy Mode has no authentication unless you enable it.** The `/api/meilisearch/*` catch-all proxy injects the admin API key server-side. When built-in auth is disabled, the route accepts any request that reaches it.
 >
 > **You MUST deploy this behind an authentication layer in production environments** (e.g., Traefik Basic Auth, VPN, Cloudflare Access), enable the optional built-in auth, or restrict it to a private network. Exposing the node image directly to the internet without authentication is equivalent to giving public admin access to your Meilisearch instance.
 
@@ -102,7 +102,7 @@ When enabled, all proxy requests require an authenticated session and unauthenti
 Example production-ready compose stack using [Traefik](https://doc.traefik.io/traefik/reference/install-configuration/providers/docker/) as a reverse proxy with [Basic Auth](https://doc.traefik.io/traefik/reference/routing-configuration/http/middlewares/basicauth/) middleware. Traefik would typically be set up as its own service in a different compose stack. You can reference [this example](https://github.com/connorabbas/traefik-docker-compose/blob/master/docker-compose.yml).
 
 > [!IMPORTANT]
-> This example includes Traefik Basic Auth via inline labels. The proxy route (`/api/meilisearch/*`) has no built-in authentication, so the reverse proxy must enforce auth before requests reach the app.
+> This example includes Traefik Basic Auth via inline labels. If built-in auth is not enabled, the reverse proxy must enforce auth before requests reach the app.
 
 ```yml
 services:
@@ -178,7 +178,7 @@ networks:
 
 **Security:**
 
-- The Manager app is protected by Traefik Basic Auth because it has no built-in authentication.
+- The Manager app is protected by Traefik Basic Auth in this example. Built-in auth can be enabled instead for a self-contained login layer.
 - Meilisearch relies on its own API key system for external access.
 - The `meili` network is internal-only, isolating direct container-to-container communication.
 

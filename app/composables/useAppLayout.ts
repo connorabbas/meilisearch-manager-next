@@ -133,7 +133,7 @@ export function useAppLayout() {
         currentRoute,
         menuItems,
         mobileMenuOpen,
-        singleInstanceMode: meilisearchStore.singleInstanceMode,
+        isSingleInstanceProxyMode: meilisearchStore.isSingleInstanceProxyMode,
         changeInstanceModalOpen,
         meilisearchInstanceMenuItems,
         currentMeilisearchIntanceName,

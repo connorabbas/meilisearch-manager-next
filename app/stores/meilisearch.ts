@@ -16,7 +16,7 @@ export const useMeilisearchStore = defineStore('meilisearch', () => {
     const confirm = useConfirm()
 
     // -- State --
-    const secureMode = ref(false)
+    const singleInstanceProxyMode = ref(false)
     const initialized = ref(false)
 
     const instances = ref<MeilisearchInstanceConfig[]>([])
@@ -27,7 +27,7 @@ export const useMeilisearchStore = defineStore('meilisearch', () => {
     const connectionError = ref<string | null>(null)
 
     // -- Computed --
-    const singleInstanceMode = computed(() => secureMode.value)
+    const isSingleInstanceProxyMode = computed(() => singleInstanceProxyMode.value)
     const currentInstance = computed(() => instances.value.find(i => i.id === currentInstanceId.value) ?? null)
     const hasConfiguredInstance = computed(() => instances.value.length > 0)
     const isConnected = computed(() => client.value !== null && !connectionError.value)
@@ -37,10 +37,10 @@ export const useMeilisearchStore = defineStore('meilisearch', () => {
     let _unwatchCurrentId: (() => void) | undefined
 
     // -- Initialization --
-    function initializeSecureMode(host: string) {
+    function initializeSingleInstanceProxyMode(host: string) {
         if (initialized.value) return
 
-        secureMode.value = true
+        singleInstanceProxyMode.value = true
         instances.value = [{
             id: 'default',
             name: 'Default',
@@ -68,7 +68,7 @@ export const useMeilisearchStore = defineStore('meilisearch', () => {
             storedCurrentId.value = val
         })
 
-        secureMode.value = false
+        singleInstanceProxyMode.value = false
         initialized.value = true
     }
 
@@ -82,7 +82,7 @@ export const useMeilisearchStore = defineStore('meilisearch', () => {
         instances.value = []
         currentInstanceId.value = null
         initialized.value = false
-        secureMode.value = false
+        singleInstanceProxyMode.value = false
     }
 
     async function checkConnection(host: string, apiKey: string): Promise<void> {
@@ -146,8 +146,8 @@ export const useMeilisearchStore = defineStore('meilisearch', () => {
     }
 
     async function addInstance(config: Omit<MeilisearchInstanceConfig, 'id'>) {
-        if (secureMode.value) {
-            throw new Error('Cannot add instances in secure mode')
+        if (singleInstanceProxyMode.value) {
+            throw new Error('Cannot add instances in single-instance proxy mode')
         }
 
         if (instances.value.some(i => i.host === config.host)) {
@@ -183,7 +183,7 @@ export const useMeilisearchStore = defineStore('meilisearch', () => {
     }
 
     function removeInstance(id: string) {
-        if (secureMode.value) return
+        if (singleInstanceProxyMode.value) return
         instances.value = instances.value.filter(i => i.id !== id)
         if (currentInstanceId.value === id) {
             currentInstanceId.value = instances.value[0]?.id ?? null
@@ -196,7 +196,7 @@ export const useMeilisearchStore = defineStore('meilisearch', () => {
         id: string,
         onRemovedCallback?: () => void | Promise<void>
     ) {
-        if (secureMode.value) return
+        if (singleInstanceProxyMode.value) return
         confirm.require({
             group: 'delete',
             message: 'Are you sure you want to remove this instance?',
@@ -232,13 +232,13 @@ export const useMeilisearchStore = defineStore('meilisearch', () => {
         isConnecting: readonly(isConnecting),
         isConnected,
         connectionError: readonly(connectionError),
-        secureMode: readonly(secureMode),
+        singleInstanceProxyMode: readonly(singleInstanceProxyMode),
         initialized: readonly(initialized),
-        singleInstanceMode,
+        isSingleInstanceProxyMode,
         hasConfiguredInstance,
         instances: readonly(instances),
         currentInstance: readonly(currentInstance),
-        initializeSecureMode,
+        initializeSingleInstanceProxyMode,
         initializeMultiInstance,
         dispose,
         connect,

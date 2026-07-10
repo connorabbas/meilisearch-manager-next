@@ -42,7 +42,7 @@ RUN npm run build --if-present
 
 
 # ==========================================
-# RELEASE-NODE TARGET (Single-Instance Production)
+# RELEASE-NODE TARGET (Single-Instance Proxy Runtime)
 # Requires runtime env vars:
 #   NUXT_MEILISEARCH_HOST
 #   NUXT_MEILISEARCH_API_KEY
@@ -53,7 +53,7 @@ COPY --from=build-node --chown=nonroot:nonroot /app/.output/ ./
 
 ENV PORT=3000
 ENV HOST=0.0.0.0
-ENV NUXT_SECURE_MODE=true
+ENV NUXT_MEILISEARCH_SINGLE_INSTANCE_PROXY_MODE=true
 ENV NODE_ENV=production
 
 USER nonroot

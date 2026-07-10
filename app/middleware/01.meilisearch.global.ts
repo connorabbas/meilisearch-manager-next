@@ -8,7 +8,7 @@ export default defineNuxtRouteMiddleware(async (to) => {
     }
 
     if (to.path === '/new-instance') {
-        if (meilisearchStore.singleInstanceMode) {
+        if (meilisearchStore.isSingleInstanceProxyMode) {
             return navigateTo('/dashboard', { replace: true })
         }
 
@@ -16,7 +16,7 @@ export default defineNuxtRouteMiddleware(async (to) => {
     }
 
     if (to.path === '/connection-error') {
-        if (meilisearchStore.singleInstanceMode) {
+        if (meilisearchStore.isSingleInstanceProxyMode) {
             return navigateTo('/dashboard', { replace: true })
         }
 
@@ -34,7 +34,7 @@ export default defineNuxtRouteMiddleware(async (to) => {
     try {
         await meilisearchStore.connect()
     } catch {
-        if (meilisearchStore.singleInstanceMode) {
+        if (meilisearchStore.isSingleInstanceProxyMode) {
             throw createError({
                 status: 503,
                 statusText: 'Service Unavailable',

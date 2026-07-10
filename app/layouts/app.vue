@@ -42,7 +42,7 @@ const {
     currentRoute,
     mobileMenuOpen,
     menuItems,
-    singleInstanceMode,
+    isSingleInstanceProxyMode,
     changeInstanceModalOpen,
     meilisearchInstanceMenuItems,
     currentMeilisearchIntanceName,
@@ -78,7 +78,7 @@ onUnmounted(() => {
                 </div>
                 <template #footer>
                     <SelectColorModeButton
-                        v-if="singleInstanceMode"
+                        v-if="isSingleInstanceProxyMode"
                         :show-label="false"
                     />
                     <PopupMenuButton
@@ -121,7 +121,7 @@ onUnmounted(() => {
                             </template>
                             <template #end>
                                 <div class="hidden lg:flex items-center ms-6 space-x-4">
-                                    <template v-if="singleInstanceMode">
+                                    <template v-if="isSingleInstanceProxyMode">
                                         <SelectColorModeButton :show-label="false" />
                                     </template>
                                     <template v-else>

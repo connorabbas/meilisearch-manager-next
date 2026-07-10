@@ -35,7 +35,7 @@ async function handleChangeInstance() {
     >
         <div>
             <Select
-                v-if="!meilisearchStore.singleInstanceMode && meilisearchStore.instances.length"
+                v-if="!meilisearchStore.isSingleInstanceProxyMode && meilisearchStore.instances.length"
                 v-model="currentInstanceId"
                 :options="(meilisearchStore.instances as any[])"
                 optionLabel="name"

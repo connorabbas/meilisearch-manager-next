@@ -42,7 +42,7 @@ const {
     currentRoute,
     mobileMenuOpen,
     menuItems,
-    singleInstanceMode,
+    isSingleInstanceProxyMode,
     changeInstanceModalOpen,
     meilisearchInstanceMenuItems,
     currentMeilisearchIntanceName,
@@ -100,11 +100,11 @@ onUnmounted(() => {
                 <template #footer>
                     <div class="flex items-center gap-4">
                         <SelectColorModeButton
-                            v-if="singleInstanceMode"
+                            v-if="isSingleInstanceProxyMode"
                             :show-label="false"
                         />
                         <Button
-                            v-if="singleInstanceMode && authEnabled"
+                            v-if="isSingleInstanceProxyMode && authEnabled"
                             label="Logout"
                             severity="secondary"
                             @click="logout"
@@ -114,7 +114,7 @@ onUnmounted(() => {
                             </template>
                         </Button>
                         <PopupMenuButton
-                            v-if="!singleInstanceMode"
+                            v-if="!isSingleInstanceProxyMode"
                             name="mobile-meili-instance-dd"
                             severity="secondary"
                             size="large"
@@ -154,7 +154,7 @@ onUnmounted(() => {
                             </template>
                             <template #end>
                                 <div class="hidden lg:flex items-center ms-6 space-x-4">
-                                    <template v-if="singleInstanceMode">
+                                    <template v-if="isSingleInstanceProxyMode">
                                         <SelectColorModeButton :show-label="false" />
                                         <Button
                                             v-if="authEnabled"

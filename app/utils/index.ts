@@ -1,3 +1,4 @@
+import type { TaskStatus } from 'meilisearch'
 import { twMerge } from 'tailwind-merge'
 
 export const ptViewMerge = (
@@ -52,7 +53,7 @@ export function maskedApiKey(
     return `${start}****${end}`
 }
 
-export function getStatusSeverity(status: string) {
+export function getStatusSeverity(status: TaskStatus) {
     switch (status) {
     case 'succeeded':
         return 'success'
@@ -173,3 +174,17 @@ export function isVersionAtLeast(version: string, target: string): boolean {
     }
     return true
 }
+
+export function downloadFile(blob: Blob, filename: string) {
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = filename
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    URL.revokeObjectURL(url)
+}
+
+
+

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Astroid, EllipsisVertical, Funnel, Pencil, Plus, Search, Trash2, Trophy } from '@lucide/vue'
+import { Astroid, Download, EllipsisVertical, Funnel, Pencil, Plus, Search, Trash2, Trophy } from '@lucide/vue'
 import type { IndexEmbedderOption, MenuItem } from '@/types'
 import { useDebounceFn } from '@vueuse/core'
 import { useSearch } from '@/composables/meilisearch/useSearch'
@@ -11,6 +11,7 @@ import type { Embedder, RecordAny } from 'meilisearch'
 import DocumentHitJsonRow from '@/components/meilisearch/DocumentHitJsonRow.vue'
 import Menu from '@/components/router-link-menus/Menu.vue'
 import ImportDocumentsDrawer from '@/components/meilisearch/ImportDocumentsDrawer.vue'
+import ExportDocumentsModal from '@/components/meilisearch/ExportDocumentsModal.vue'
 import EditDocumentDrawer from '@/components/meilisearch/EditDocumentDrawer.vue'
 import FilterDocumentsDrawer from '@/components/meilisearch/FilterDocumentsDrawer.vue'
 import DocumentsGeoMap from '@/components/meilisearch/DocumentsGeoMap.vue'
@@ -53,6 +54,7 @@ const {
 } = useSearch()
 
 const primaryKey = computed(() => currentIndex.value?.primaryKey)
+const totalHitsString = computed(() => `${searchResults.value?.estimatedTotalHits?.toLocaleString('en-US')} total hits`)
 
 async function fetchData() {
     await Promise.all([
@@ -134,6 +136,9 @@ watch(searchFilter, () => {
 
 // Create Drawer
 const showImportDocumentsDrawerOpen = ref(false)
+
+// Export Modal
+const exportDocumentsModalOpen = ref(false)
 
 // Edit / Details Drawer
 const editDocumentDrawerOpen = ref(false)
@@ -292,14 +297,26 @@ onMounted(() => {
 <template>
     <div class="flex flex-col gap-4 md:gap-8">
         <Teleport to="#index-page-actions">
-            <Button
-                label="Import Documents"
-                @click="showImportDocumentsDrawerOpen = true"
-            >
-                <template #icon>
-                    <Plus />
-                </template>
-            </Button>
+            <div class="flex gap-3">
+                <Button
+                    v-if="indexStats?.numberOfDocuments"
+                    label="Export Documents"
+                    severity="secondary"
+                    @click="exportDocumentsModalOpen = true"
+                >
+                    <template #icon>
+                        <Download />
+                    </template>
+                </Button>
+                <Button
+                    label="Import Documents"
+                    @click="showImportDocumentsDrawerOpen = true"
+                >
+                    <template #icon>
+                        <Plus />
+                    </template>
+                </Button>
+            </div>
         </Teleport>
 
         <Teleport to="body">
@@ -309,6 +326,10 @@ onMounted(() => {
                     :index-uid="indexUid"
                     :primary-key="currentIndex?.primaryKey"
                     @documents-imported="fetchData"
+                />
+                <ExportDocumentsModal
+                    v-model:visible="exportDocumentsModalOpen"
+                    :index-uid="indexUid"
                 />
                 <EditDocumentDrawer
                     v-model:visible="editDocumentDrawerOpen"
@@ -354,6 +375,12 @@ onMounted(() => {
                                 @keyup.enter="searchPaginated(indexUid, true)"
                             />
                         </IconField>
+                    </div>
+                    <div>
+                        <Chip
+                            :label="totalHitsString"
+                            class="text-muted-color-emphasis"
+                        />
                     </div>
                     <div class="flex justify-end gap-4">
                         <div>
@@ -496,6 +523,55 @@ onMounted(() => {
                         alignFrozen="left"
                     />
                     <Column
+                        v-if="showRankingScore"
+                        :pt="{
+                            headerCell: {
+                                class: 'dynamic-bg z-2'
+                            },
+                            bodyCell: {
+                                class: 'dynamic-bg z-1'
+                            }
+                        }"
+                        header="Ranking Score"
+                        frozen
+                        alignFrozen="left"
+                    >
+                        <template #body="{ data }">
+                            <Tag
+                                v-if="data._rankingScore !== undefined"
+                                :value="`${Math.round(data._rankingScore * 100)}%`"
+                                :severity="getRankingScoreSeverity(data._rankingScore)"
+                            />
+                        </template>
+                    </Column>
+                    <Column
+                        v-if="showRankingScore"
+                        :pt="{
+                            headerCell: {
+                                class: 'dynamic-bg z-2'
+                            },
+                            bodyCell: {
+                                class: 'dynamic-bg z-1'
+                            }
+                        }"
+                        header="Ranking Score Details"
+                        frozen
+                        alignFrozen="left"
+                    >
+                        <template #body="{ data }">
+                            <Button
+                                v-if="data._rankingScoreDetails !== undefined"
+                                v-tooltip.top="'View Ranking Score Details'"
+                                class="p-0 text-inherit"
+                                severity="contrast"
+                                variant="link"
+                                @click="toggleTableFieldDetailPopover($event, '_rankingScoreDetails', data._rankingScoreDetails)"
+                            >
+                                View Details
+                            </Button>
+                        </template>
+                    </Column>
+                    <Column
                         v-for="fieldName in Object.keys(indexStats?.fieldDistribution ?? {})"
                         :key="fieldName"
                         :field="fieldName"
@@ -526,20 +602,6 @@ onMounted(() => {
                             >
                                 <span class="truncate w-auto max-w-[200px]">{{ data[fieldName] }}</span>
                             </Button>
-                        </template>
-                    </Column>
-                    <Column
-                        v-if="showRankingScore"
-                        header="Ranking Score"
-                        frozen
-                        alignFrozen="right"
-                    >
-                        <template #body="{ data }">
-                            <Tag
-                                v-if="data._rankingScore !== undefined"
-                                :value="`${Math.round(data._rankingScore * 100)}%`"
-                                :severity="getRankingScoreSeverity(data._rankingScore)"
-                            />
                         </template>
                     </Column>
                     <Column

@@ -1,4 +1,4 @@
-import type { ContentType, EnqueuedTask, RecordAny, Task } from 'meilisearch'
+import { Meilisearch, type ContentType, type EnqueuedTask, type RecordAny, type Task } from 'meilisearch'
 import { useToast } from 'primevue/usetoast'
 import { useMeilisearchStore } from '@/stores/meilisearch'
 import { useConfirm } from 'primevue'
@@ -134,6 +134,81 @@ export function useDocuments() {
         }
     }
 
+    async function addOrUpdateDocumentsFromFile(
+        action: 'addition' | 'update',
+        indexUid: string,
+        documents: File,
+        contentType: ContentType,
+        onTaskEnqueued?: (task: EnqueuedTask) => void
+    ): Promise<Task | undefined> {
+        const currentInstance = meilisearchStore.currentInstance
+        if (!currentInstance || !meilisearchStore.getClient()) {
+            error.value = 'Meilisearch client not connected'
+            return
+        }
+
+        isSendingTask.value = true
+        error.value = null
+
+        try {
+            const uploadClient = new Meilisearch({
+                host: currentInstance.host,
+                apiKey: currentInstance.apiKey,
+                httpClient: async (url, init) => {
+                    const response = await fetch(url, {
+                        ...init,
+                        body: documents,
+                    })
+                    const responseBody = await response.text()
+
+                    let parsedResponse: unknown
+                    try {
+                        parsedResponse = responseBody ? JSON.parse(responseBody) : undefined
+                    } catch {
+                        if (!response.ok) {
+                            throw new Error(responseBody || response.statusText)
+                        }
+                        throw new Error('Meilisearch returned an invalid JSON response')
+                    }
+
+                    if (!response.ok) {
+                        const message = parsedResponse && typeof parsedResponse === 'object' && 'message' in parsedResponse
+                            ? String(parsedResponse.message)
+                            : response.statusText
+                        throw new Error(message)
+                    }
+
+                    return parsedResponse
+                },
+            })
+
+            const index = uploadClient.index(indexUid)
+            const enqueuedTask = (action === 'addition')
+                ? await index.addDocumentsFromString('', contentType)
+                : await index.updateDocumentsFromString('', contentType)
+
+            isSendingTask.value = false
+            onTaskEnqueued?.(enqueuedTask)
+
+            isPollingTask.value = true
+            const result = await pollTaskStatus(
+                enqueuedTask.taskUid,
+                `A ${action} task has been enqueued (taskUid: ${enqueuedTask.taskUid})`,
+                'Documents have been successfully imported',
+                60,
+                1000
+            )
+
+            return result
+        } catch (err) {
+            error.value = (err as Error).message
+            throw err
+        } finally {
+            isSendingTask.value = false
+            isPollingTask.value = false
+        }
+    }
+
     async function deleteDocument(
         indexUid: string,
         documentId: string | number,
@@ -183,6 +258,7 @@ export function useDocuments() {
             rejectProps: {
                 label: 'Cancel',
                 severity: 'secondary',
+                text: true,
             },
             acceptProps: {
                 label: 'Delete',
@@ -243,6 +319,7 @@ export function useDocuments() {
             rejectProps: {
                 label: 'Cancel',
                 severity: 'secondary',
+                text: true,
             },
             acceptProps: {
                 label: 'Delete',
@@ -278,6 +355,7 @@ export function useDocuments() {
         fetchDocument,
         addOrUpdateDocuments,
         addOrUpdateDocumentsFromString,
+        addOrUpdateDocumentsFromFile,
         confirmDeleteAllDocuments,
         confirmDeleteDocument,
     }

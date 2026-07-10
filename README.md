@@ -7,11 +7,11 @@ This project is the refactored Nuxt version of the original Vue SPA project: [co
 ## Features
 
 - :rocket: **Multi-instance** mode for local development and testing
-- :lock: **Single-instance** mode with server-side credential proxying
+- :link: **Single-Instance Proxy** mode for one preconfigured Meilisearch instance
 - :bar_chart: **Dashboard** with stats and version details
 - :open_file_folder: **Indexes** listing, creation, inspection, primary key updates, and deletion
 - :gear: **Index settings** full JSON viewer/editor
-- :page_facing_up: **Documents** import, search (full-text, hybrid, geo), sort, filter, pagination, edit, and delete flows
+- :page_facing_up: **Documents** import & export, search (full-text, hybrid, geo), sort, filter, pagination, edit, and delete flows
 - :key: **API keys** create, view, edit, copy, and delete flows
 - :ballot_box_with_check: **Tasks** history with filtering, infinite scroll, and optional polling
 - :hourglass: **Data backups** with dump and snapshot exports
@@ -47,9 +47,11 @@ In this mode, the app behaves as a pure client-side SPA. You can add, manage, an
 > [!NOTE]
 > Credentials in `localStorage` are isolated to the browser and the app's origin. They are not transmitted to any server. This is generally safe for development and testing, but may not meet organizational security requirements for production use.
 
-### Single-Instance Mode
+### Single-Instance Proxy Mode
 
-In this mode, the app runs behind a Nitro server. The admin API key lives only in server-side environment variables. All Meilisearch requests are transparently proxied through the app's backend, which injects the real credentials server-side.
+Designed for deployments where the Manager should control **one preconfigured Meilisearch instance** through the app's Nitro server.
+
+In this mode, the admin API key lives only in server-side environment variables. The browser talks to the app's `/api/meilisearch/*` endpoint, and Nitro forwards those requests to the configured Meilisearch upstream with the real credentials injected server-side.
 
 ```env
 NUXT_MEILISEARCH_HOST=https://your-instance-domain.com
@@ -63,11 +65,12 @@ NUXT_MEILISEARCH_API_KEY=yourAdminApiKey
 - Instance management UI is disabled (single pre-configured instance only)
 - Eliminates CORS concerns (browser talks to same-origin proxy)
 - **Requires a running Nitro server (Node environment)** - cannot be used with static hosting
+- Does **not** provide authentication by itself; protect the app with external auth or private networking
 
 **Typical deployment:** Host the app alongside your Meilisearch instance (same network/VPC, or behind the same reverse proxy) so the Nitro server can reach Meilisearch securely.
 
 > [!CAUTION]
-> **By default, the single-instance proxy route has no built-in authentication.** The `/api/meilisearch/*` catch-all proxy injects the admin API key server-side, but the route itself accepts any request that reaches it.
+> **Single-Instance Proxy Mode has no built-in authentication.** The `/api/meilisearch/*` catch-all proxy injects the admin API key server-side, but the route itself accepts any request that reaches it.
 >
 > **You MUST deploy this behind an authentication layer in production environments** (e.g., Traefik Basic Auth, VPN, Cloudflare Access), enable the optional built-in auth (see below), or restrict it to a private network. Exposing the app directly to the internet without authentication is equivalent to giving public admin access to your Meilisearch instance.
 
@@ -89,14 +92,14 @@ NUXT_SESSION_PASSWORD=a-random-password-with-at-least-32-characters
 
 ### Explicit Mode Control
 
-You can explicitly force a mode with `NUXT_SECURE_MODE`:
+You can explicitly force a mode with `NUXT_MEILISEARCH_SINGLE_INSTANCE_PROXY_MODE`:
 
 ```env
-NUXT_SECURE_MODE=true   # Force secure mode (throws on startup if credentials missing)
-NUXT_SECURE_MODE=false  # Force multi-instance mode (even if credentials are set)
+NUXT_MEILISEARCH_SINGLE_INSTANCE_PROXY_MODE=true   # Force single-instance proxy mode (throws on startup if credentials missing)
+NUXT_MEILISEARCH_SINGLE_INSTANCE_PROXY_MODE=false  # Force multi-instance mode (even if credentials are set)
 ```
 
-If omitted (default is `'auto'`), the app auto-detects: secure mode activates when both `NUXT_MEILISEARCH_HOST` and `NUXT_MEILISEARCH_API_KEY` are present.
+If omitted (default is `'auto'`), the app auto-detects: Single-Instance Proxy Mode activates when both `NUXT_MEILISEARCH_HOST` and `NUXT_MEILISEARCH_API_KEY` are present.
 
 ### Static Deployments
 

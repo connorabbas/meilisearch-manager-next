@@ -6,7 +6,7 @@ Pre-built Docker images are published to [Docker Hub](https://hub.docker.com/r/c
 
 Meilisearch Manager publishes two image variants:
 
-- `node` images run the single-instance proxy mode behind a Nitro server.
+- `node` images run Single-Instance Proxy Mode behind a Nitro server.
 - `nginx` images run the static multi-instance mode as a browser-only app.
 
 Both variants support `linux/amd64` and `linux/arm64`.
@@ -15,7 +15,7 @@ Both variants support `linux/amd64` and `linux/arm64`.
 
 | Target | Tag | Description |
 |--------|-----|-------------|
-| Node | `node-latest` | Latest Node single-instance build |
+| Node | `node-latest` | Latest Node single-instance proxy build |
 | Node | `node-<semver>` | Specific release, such as `node-1.6.0` |
 | Nginx | `nginx-latest` | Latest nginx static multi-instance build |
 | Nginx | `nginx-<semver>` | Specific release, such as `nginx-1.6.0` |
@@ -72,7 +72,7 @@ networks:
 
 ## Node Image (Single-Instance Proxy)
 
-The `node` images run the single-instance proxy mode behind a Nitro server. The images are built on top of the official [Docker Hardened Images](https://www.docker.com/products/hardened-images/) (`dhi.io/node:22-alpine`), providing a minimal runtime with near-zero CVEs.
+The `node` images run Single-Instance Proxy Mode behind a Nitro server. This mode manages one preconfigured Meilisearch instance through the app's `/api/meilisearch/*` proxy. The images are built on top of the official [Docker Hardened Images](https://www.docker.com/products/hardened-images/) (`dhi.io/node:22-alpine`), providing a minimal runtime with near-zero CVEs; this base image does not add app-level authentication.
 
 > [!NOTE]
 > The `node` images expose port `3000` and require the `NUXT_MEILISEARCH_HOST` and `NUXT_MEILISEARCH_API_KEY` runtime variables to be set.
@@ -80,7 +80,7 @@ The `node` images run the single-instance proxy mode behind a Nitro server. The 
 ### Security Warning
 
 > [!CAUTION]
-> **By default, the single-instance proxy route has no built-in authentication.** The `/api/meilisearch/*` catch-all proxy injects the admin API key server-side, but the route itself accepts any request that reaches it.
+> **Single-Instance Proxy Mode has no built-in authentication.** The `/api/meilisearch/*` catch-all proxy injects the admin API key server-side, but the route itself accepts any request that reaches it.
 >
 > **You MUST deploy this behind an authentication layer in production environments** (e.g., Traefik Basic Auth, VPN, Cloudflare Access), enable the optional built-in auth, or restrict it to a private network. Exposing the node image directly to the internet without authentication is equivalent to giving public admin access to your Meilisearch instance.
 

@@ -26,7 +26,7 @@ export default defineNuxtConfig({
         },
     },
     runtimeConfig: {
-        secureMode: 'auto',
+        meilisearchSingleInstanceProxyMode: 'auto',
         meilisearchHost: '',
         meilisearchApiKey: '',
         authEnabled: false,

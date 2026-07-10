@@ -10,9 +10,10 @@ RUN apt-get update && apt-get install -y \
     curl \
     ca-certificates \
     && rm -rf /var/lib/apt/lists/*
-RUN npm install -g opencode-ai
 
 USER node
+RUN curl -fsSL https://opencode.ai/install | bash -s -- --no-modify-path
+ENV PATH=/home/node/.opencode/bin:$PATH
 
 COPY --chown=node:node .devcontainer/.bashrc /home/node/.bashrc
 RUN git config --global --add safe.directory /workspace
@@ -41,7 +42,7 @@ RUN npm run build --if-present
 
 
 # ==========================================
-# RELEASE-NODE TARGET (Single-Instance Production)
+# RELEASE-NODE TARGET (Single-Instance Proxy Runtime)
 # Requires runtime env vars:
 #   NUXT_MEILISEARCH_HOST
 #   NUXT_MEILISEARCH_API_KEY
@@ -52,7 +53,7 @@ COPY --from=build-node --chown=nonroot:nonroot /app/.output/ ./
 
 ENV PORT=3000
 ENV HOST=0.0.0.0
-ENV NUXT_SECURE_MODE=true
+ENV NUXT_MEILISEARCH_SINGLE_INSTANCE_PROXY_MODE=true
 ENV NODE_ENV=production
 
 USER nonroot

@@ -44,6 +44,7 @@ export function useSearch(initialPerPage: number = 20) {
             limit: perPage.value,
             offset: offset.value,
             showRankingScore: showRankingScore.value || undefined,
+            showRankingScoreDetails: showRankingScore.value || undefined,
         }
     })
 

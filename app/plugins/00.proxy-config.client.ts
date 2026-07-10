@@ -8,10 +8,10 @@ export default defineNuxtPlugin(async () => {
         return
     }
 
-    // Server deployment: fetch config to determine secure vs. multi-instance mode
-    let config: { secureMode: boolean }
+    // Server deployment: fetch config to determine single-instance proxy vs. multi-instance mode
+    let config: { singleInstanceProxyMode: boolean }
     try {
-        config = await $fetch<{ secureMode: boolean }>('/api/config')
+        config = await $fetch<{ singleInstanceProxyMode: boolean }>('/api/config')
     } catch (err: any) {
         // 404 likely static hosting without the flag set -> graceful fallback
         if (err?.statusCode === 404 || err?.status === 404) {
@@ -34,8 +34,8 @@ export default defineNuxtPlugin(async () => {
 
     const proxyHost = new URL('api/meilisearch', window.location.origin + runtimeConfig.app.baseURL).toString()
 
-    if (config.secureMode) {
-        store.initializeSecureMode(proxyHost)
+    if (config.singleInstanceProxyMode) {
+        store.initializeSingleInstanceProxyMode(proxyHost)
     } else {
         store.initializeMultiInstance()
     }

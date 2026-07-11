@@ -10,7 +10,6 @@ RUN apt-get update && apt-get install -y \
     curl \
     ca-certificates \
     && rm -rf /var/lib/apt/lists/*
-RUN npm install -g opencode-ai
 
 USER node
 

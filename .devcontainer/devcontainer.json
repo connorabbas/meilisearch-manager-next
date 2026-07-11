@@ -42,7 +42,7 @@
             }
         }
     },
-    "postCreateCommand": "chown -R 1000:1000 /workspace && npm install",
+    "postCreateCommand": "bash .devcontainer/postCreateCommand.sh",
     "remoteUser": "node"
     // "forwardPorts": [],
     // "runServices": [],

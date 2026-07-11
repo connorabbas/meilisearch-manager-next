@@ -67,8 +67,8 @@ function editRule(rule: SearchRule) {
 }
 
 const activeFilterOptions = [
-    { label: 'Active', value: true },
-    { label: 'Inactive', value: false },
+    { label: 'Active', value: true, severity: 'success' },
+    { label: 'Inactive', value: false, severity: 'warn' },
 ]
 
 const debouncedSearch = useDebounceFn(() => {
@@ -252,7 +252,22 @@ function toggleContextMenu(event: Event, rule: SearchRule) {
                                 placeholder="Any"
                                 show-clear
                                 fluid
-                            />
+                            >
+                                <template #value="{ value, placeholder }">
+                                    <Tag
+                                        v-if="value !== null && value !== undefined"
+                                        :value="value ? 'Active' : 'Inactive'"
+                                        :severity="value ? 'success' : 'warn'"
+                                    />
+                                    <span v-else>{{ placeholder }}</span>
+                                </template>
+                                <template #option="{ option }">
+                                    <Tag
+                                        :value="option.label"
+                                        :severity="option.severity"
+                                    />
+                                </template>
+                            </Select>
                         </template>
                         <template #body="{ data }">
                             <Tag

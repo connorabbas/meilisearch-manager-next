@@ -40,7 +40,7 @@ defineExpose({
                 custom
             >
                 <a
-                    :href="href"
+                    :href="href ?? undefined"
                     :target="item.target"
                     :class="['p-menu-item-link', item.class]"
                     :style="item.style"

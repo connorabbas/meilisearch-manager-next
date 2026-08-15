@@ -24,7 +24,7 @@ This project is the refactored Nuxt version of the original Vue SPA project: [co
 
 ### Demo
 
-Check out the live demo (hosted with GitHub pages): [https://connorabbas.github.io/meilisearch-manager-next/](https://connorabbas.github.io/meilisearch-manager-next/)
+Check out the live demo (hosted with GitHub pages): [https://connorabbas.github.io/meilisearch-manager/](https://connorabbas.github.io/meilisearch-manager/)
 
 ## Configuration
 

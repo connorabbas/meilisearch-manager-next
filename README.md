@@ -2,7 +2,7 @@
 
 A Nuxt-based web UI for managing Meilisearch instances.
 
-This project is the refactored Nuxt version of the original Vue SPA project: [connorabbas/meilisearch-manager](https://github.com/connorabbas/meilisearch-manager).
+This project is the refactored Nuxt version of the original Vue SPA project: [connorabbas/meilisearch-manager-legacy](https://github.com/connorabbas/meilisearch-manager-legacy).
 
 ## Features
 

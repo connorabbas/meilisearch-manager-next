@@ -4,8 +4,15 @@
     "dockerComposeFile": [
         "../docker-compose.dev.yml"
     ],
+    "features": {
+        "ghcr.io/devcontainers/features/docker-outside-of-docker:1": {}
+    },
     "service": "nuxt",
     "workspaceFolder": "/workspace",
+    "remoteEnv": {
+        "COMPOSE_PROJECT_NAME": "meilisearch-manager-next",
+        "LOCAL_WORKSPACE_FOLDER": "${localWorkspaceFolder}"
+    },
     "mounts": [
         "type=bind,source=/home/${localEnv:USER}/.ssh,target=/home/node/.ssh,readonly",
         "type=bind,source=/home/${localEnv:USER}/.gitconfig,target=/home/node/.gitconfig,readonly",

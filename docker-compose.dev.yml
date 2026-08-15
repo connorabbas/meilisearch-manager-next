@@ -8,8 +8,10 @@ services:
     hostname: meilisearch-manager
     entrypoint: /bin/bash
     working_dir: /workspace
+    group_add:
+      - '${DOCKER_GID:-1001}'
     volumes:
-      - '.:/workspace'
+      - '${LOCAL_WORKSPACE_FOLDER:-.}:/workspace'
     tty: true
     labels:
       - "traefik.enable=true"
@@ -20,7 +22,13 @@ services:
       - web
 
   meilisearch:
-    image: 'getmeili/meilisearch:latest'
+    image: 'getmeili/meilisearch:${MEILISEARCH_VERSION:-latest}'
+    # command:
+    #   - /bin/meilisearch
+    #   - --upgrade-db # v1.51 and up
+    #   - --experimental-dumpless-upgrade # v1.50 and below
+    restart: unless-stopped
+    stop_grace_period: 1m
     ports:
       - '${FORWARD_MEILISEARCH_PORT:-7700}:7700'
     environment:
@@ -43,7 +51,9 @@ services:
         - '--no-verbose'
         - '--spider'
         - 'http://127.0.0.1:7700/health'
+      interval: 10s
       retries: 3
+      start_period: 10s
       timeout: 5s
 
 volumes:

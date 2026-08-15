@@ -39,7 +39,7 @@ defineExpose({ $el: childRef })
                 custom
             >
                 <a
-                    :href="href"
+                    :href="href ?? undefined"
                     :target="item.target"
                     :class="[
                         'p-panelmenu-item-link flex items-center cursor-pointer no-underline px-3 py-2',

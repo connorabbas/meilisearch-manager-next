@@ -41,7 +41,7 @@ defineExpose({ $el: childRef })
                 custom
             >
                 <a
-                    :href="href"
+                    :href="href ?? undefined"
                     :target="item.target"
                     :class="[
                         'p-menubar-item-link',

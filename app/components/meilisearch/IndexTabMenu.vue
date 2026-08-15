@@ -33,7 +33,7 @@ const currentTab = computed(() => {
                 custom
             >
                 <a
-                    :href="href"
+                    :href="href ?? undefined"
                     class="text-inherit no-underline"
                     @click="navigate"
                 >

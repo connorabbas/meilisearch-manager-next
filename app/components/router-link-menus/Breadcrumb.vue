@@ -31,7 +31,7 @@ defineExpose({ $el: childRef })
                 custom
             >
                 <a
-                    :href="href"
+                    :href="href ?? undefined"
                     :target="item.target"
                     :class="['p-breadcrumb-item-link', item.class]"
                     :style="item.style"
